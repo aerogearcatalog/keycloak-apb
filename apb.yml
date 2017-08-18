@@ -1,0 +1,23 @@
+name: keycloak-apb
+image: pbrookes/keycloak-apb
+description: Keycloak - secure key/value store
+bindable: True
+async: optional
+metadata:
+  displayName: Phils keycloak
+plans:
+  - name: default
+    description: This default plan deploys keycloak-apb
+    free: True
+    metadata: {}
+    parameters: 
+    - name: ADMIN_USERNAME
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin username
+    - name: ADMIN_PASSWORD
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin password

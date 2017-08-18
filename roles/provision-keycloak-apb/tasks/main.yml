@@ -1,0 +1,96 @@
+##############################################################################
+## Provision keycloak
+## This role executes much of the needed functionality to provision an
+## application using an Ansible Playbook Bundle.  Included in the comments
+## below are some sample resources for getting started deploying an application
+## to OpenShift.
+##############################################################################
+
+
+##############################################################################
+## An OpenShift Origin deployment configuration provides a replication
+## controller, spins up pods, and also provides the ability to transition from
+## one deployment of an image to a new one.
+## https://docs.openshift.org/latest/architecture/core_concepts/deployments.html#deployments-and-deployment-configurations
+##############################################################################
+- name: create deployment config
+  openshift_v1_deployment_config:
+    name: keycloak
+    namespace: '{{ namespace }}'
+    labels:
+      app: keycloak
+      service: keycloak
+    replicas: 1
+    selector:
+      app: keycloak
+      service: keycloak
+    spec_template_metadata_labels:
+      app: keycloak
+      service: keycloak
+    containers:
+    - env:
+      - name: KEYCLOAK_USER
+        value: '{{ADMIN_USERNAME}}'
+      - name: KEYCLOAK_PASSWORD
+        value: '{{ADMIN_PASSWORD}}'
+      image: docker.io/jimmidyson/keycloak-openshift:2.5.4.Final # replace with your application image
+      name: keycloak
+      ports:
+      - container_port: 8080
+        protocol: TCP
+
+
+##############################################################################
+## A Kubernetes service serves as an internal load balancer.  It identifies a
+## set of replicated pods in order to proxy the connections it receives to them.
+## https://docs.openshift.org/latest/architecture/core_concepts/pods_and_services.html#services
+##############################################################################
+- name: create keycloak service
+  k8s_v1_service:
+    name: keycloak
+    namespace: '{{ namespace }}'
+    labels:
+      app: keycloak
+      service: keycloak
+    selector:
+      app: keycloak
+      service: keycloak
+    ports:
+      - name: web
+        port: 80
+        target_port: 8080
+
+
+##############################################################################
+## An OpenShift Origin route exposes a service at a host name, so that external
+## clients can reach it by name. Each route consists of a name, a service
+## selector, and an optional security configuration.
+## https://docs.openshift.org/latest/architecture/core_concepts/routes.html
+##############################################################################
+- name: create keycloak route
+  openshift_v1_route:
+    name: keycloak
+    namespace: '{{ namespace }}'
+    labels:
+      app: keycloak
+      service: keycloak
+    to_name: keycloak
+    spec_port_target_port: web
+
+# - name: create keycloak secret
+#   k8s_v1_secret:
+#     name: keycloak-auth
+#     namespace: '{{ namespace }}'
+#     labels:
+#       app: keycloak
+#       service: keycloak
+#     string_data:
+#       keycloak_admin_user: '{{ADMIN_USERNAME}}'
+#       keycloak_admin_pass: '{{ADMIN_PASSWORD}}'
+
+
+- name: encode bind credentials
+  asb_encode_binding:
+    fields:
+      keycloak_admin_user: '{{ADMIN_USERNAME}}'
+      keycloak_admin_pass: '{{ADMIN_PASSWORD}}'
