@@ -1,10 +1,10 @@
 name: keycloak-apb
 image: pbrookes/keycloak-apb
 description: Keycloak - secure key/value store
-bindable: True
+bindable: False
 async: optional
 metadata:
-  displayName: Phils keycloak
+  displayName: Keycloak (APB)
 plans:
   - name: default
     description: This default plan deploys keycloak-apb
