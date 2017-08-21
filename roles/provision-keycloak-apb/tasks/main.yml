@@ -15,7 +15,7 @@
     containers:
     - env:
       - name: KEYCLOAK_USER
-        value: '{{ ADMIN_USERNAME }}'
+        value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
       image: docker.io/jimmidyson/keycloak-openshift:2.5.4.Final
@@ -50,6 +50,18 @@
     to_name: keycloak
     spec_port_target_port: web
 
+
+- name: Create keycloak admin template
+  template:
+    src: admin-secret.yml.j2
+    dest: /tmp/admin-secret.yml
+
+- name: Create keycloak secret
+  shell: oc create -f /tmp/admin-secret.yml
+
+- name: delete secret template file
+  file: path=/tmp/admin-secret.yml state=absent
+
 - 
   name: "Retrieve route to keycloak"
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
@@ -60,7 +72,7 @@
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ ADMIN_USERNAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200

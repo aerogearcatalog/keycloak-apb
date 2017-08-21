@@ -11,7 +11,7 @@ plans:
     free: True
     metadata: {}
     parameters: 
-    - name: ADMIN_USERNAME
+    - name: ADMIN_NAME
       required: True
       default: admin
       type: string
