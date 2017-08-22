@@ -90,3 +90,16 @@
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
+
+#############################################################################
+# Bindable services must make credentials available to the Ansible Service
+# Broker during the provision stage.  They will later be made available to
+# applications after a binding is created.
+# https://github.com/kubernetes-incubator/service-catalog/blob/master/docs/design.md#using-a-service-instance
+#############################################################################
+- name: encode bind credentials
+  asb_encode_binding:
+    fields:
+      KEYCLOAK_USER: '{{ ADMIN_NAME }}'
+      KEYCLOAK_PASSWORD: '{{ ADMIN_PASSWORD }}'
+      KEYCLOAK_HOST: 'http://{{ keycloak_route.stdout }}'
