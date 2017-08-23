@@ -103,3 +103,4 @@
       KEYCLOAK_USER: '{{ ADMIN_NAME }}'
       KEYCLOAK_PASSWORD: '{{ ADMIN_PASSWORD }}'
       KEYCLOAK_HOST: 'http://{{ keycloak_route.stdout }}'
+      NAME: keycloak

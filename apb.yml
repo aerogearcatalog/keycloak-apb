@@ -1,5 +1,5 @@
 name: keycloak-apb
-image: feedhenry/keycloak-apb
+image: pbrookes/keycloak-apb
 description: Keycloak - secure key/value store
 bindable: True
 async: optional
