@@ -50,6 +50,10 @@
     to_name: keycloak
     spec_port_target_port: web
 
+- 
+  name: "Retrieve route to keycloak"
+  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
+  register: keycloak_route
 
 - name: Create keycloak admin template
   template:
@@ -62,12 +66,6 @@
 - name: delete secret template file
   file: path=/tmp/admin-secret.yml state=absent
 
-- 
-  name: "Retrieve route to keycloak"
-  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
-  register: keycloak_route
-
-
 - name: "Generate keycloak auth token"
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
@@ -76,7 +74,7 @@
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200
-  retries: 10
+  retries: 600
   delay: 2
 
 - 
@@ -91,16 +89,47 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
 
-#############################################################################
-# Bindable services must make credentials available to the Ansible Service
-# Broker during the provision stage.  They will later be made available to
-# applications after a binding is created.
-# https://github.com/kubernetes-incubator/service-catalog/blob/master/docs/design.md#using-a-service-instance
-#############################################################################
+-
+  name: Generate Username
+  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
+  register: generated_username
+
+-
+  name: Generate Password
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: generated_password
+
+
+- 
+  name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    method: POST
+    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\"}"
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 201
+
+-
+  name: Get installation details
+  uri: 
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
+    method: GET
+    validate_certs: no
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+    return_content: yes
+  register: installation
+
 - name: encode bind credentials
   asb_encode_binding:
     fields:
-      KEYCLOAK_USER: '{{ ADMIN_NAME }}'
-      KEYCLOAK_PASSWORD: '{{ ADMIN_PASSWORD }}'
-      KEYCLOAK_HOST: 'http://{{ keycloak_route.stdout }}'
+      KEYCLOAK_HOST: "http://{{ keycloak_route.stdout }}"
+      CLIENT_ID: "{{ generated_username.stdout }}"
+      INSTALLATION: "{{ installation.content }}"
       NAME: keycloak
+      ADMIN_USER: "{{ ADMIN_NAME }}"
+      ADMIN_PASS: "{{ ADMIN_PASSWORD }}"
