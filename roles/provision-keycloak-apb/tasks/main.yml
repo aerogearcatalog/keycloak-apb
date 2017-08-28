@@ -50,8 +50,7 @@
     to_name: keycloak
     spec_port_target_port: web
 
-- 
-  name: "Retrieve route to keycloak"
+- name: "Retrieve route to keycloak"
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
   register: keycloak_route
 
@@ -88,3 +87,45 @@
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
+
+- name: Generate Username
+  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
+  register: generated_username
+
+- name: Generate Password
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: generated_password
+
+- name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    method: POST
+    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\"}"
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 201
+
+- name: Get installation details
+  uri: 
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
+    method: GET
+    validate_certs: no
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+    return_content: yes
+  register: installation_text
+
+- set_fact: installation="{{ installation_text.content | from_json }}"
+
+- name: encode bind credentials
+  asb_encode_binding:
+    fields:
+      KEYCLOAK_HOST: "http://{{ keycloak_route.stdout }}"
+      CLIENT_ID: "{{ generated_username.stdout }}"
+      INSTALLATION: "{{ installation | to_json }}"
+      NAME: keycloak
+      ADMIN_USER: "{{ ADMIN_NAME }}"
+      ADMIN_PASS: "{{ ADMIN_PASSWORD }}" 
