@@ -123,9 +123,9 @@
 - name: encode bind credentials
   asb_encode_binding:
     fields:
-      KEYCLOAK_HOST: "http://{{ keycloak_route.stdout }}"
-      CLIENT_ID: "{{ generated_username.stdout }}"
-      INSTALLATION: "{{ installation | to_json }}"
-      NAME: keycloak
-      ADMIN_USER: "{{ ADMIN_NAME }}"
-      ADMIN_PASS: "{{ ADMIN_PASSWORD }}" 
+      uri: "http://{{ keycloak_route.stdout }}"
+      client_id: "{{ generated_username.stdout }}"
+      installation: "{{ installation | to_json }}"
+      name: keycloak
+      admin_user: "{{ ADMIN_NAME }}"
+      admin_pass: "{{ ADMIN_PASSWORD }}" 
