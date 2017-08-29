@@ -1,7 +1,7 @@
 {
-  "NAME": "keycloak",
-  "INSTALLATION": "{{ installation | regex_replace('(u\'|\')', '\\\"') }}",
-  "KEYCLOAK_HOST": "http://{{ keycloak_route.stdout }}",
-  "CLIENT_ID": "{{ generated_username.stdout }}",
-  "CLIENT_SECRET": "{{ generated_password.stdout }}"
+  "name": "keycloak",
+  "installation": "{{ installation | regex_replace('(u\'|\')', '\\\"') }}",
+  "uri": "http://{{ keycloak_route.stdout }}",
+  "client_id": "{{ generated_username.stdout }}",
+  "client_secret": "{{ generated_password.stdout }}"
 }
