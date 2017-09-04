@@ -150,6 +150,17 @@
 - set_fact: installation="{{ installation_text.content | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
+- name: Create bearer content file from template
+  template:
+    src: public-installation-content.json.j2
+    dest: /tmp/public-installation-content.json
+
+- name: Print bearer content file
+  shell: cat /tmp/public-installation-content.json
+  register: installation_content
+
+- set_fact: installation="{{ installation_content.stdout | from_json }}"
+
 - name: Create keycloak public client template
   template:
     src: public-client.yml.j2
