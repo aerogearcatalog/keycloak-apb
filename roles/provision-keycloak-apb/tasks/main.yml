@@ -76,7 +76,7 @@
   retries: 600
   delay: 2
 
-- 
+-
   name: "Create {{ namespace }} realm"
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms"
@@ -88,15 +88,19 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
 
-- name: Generate Username
+-
+  name: Generate Username
   shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
   register: generated_username
 
-- name: Generate Password
+-
+  name: Generate Password
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
   register: generated_password
 
-- name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
+
+-
+  name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
@@ -107,8 +111,33 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
 
-- name: Get installation details
-  uri: 
+-
+  name: "Create {{ generated_username.stdout }}-bearer client in realm {{ namespace }}"
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    method: POST
+    body: "{\"id\": \"{{ generated_username.stdout }}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 201
+
+-
+  name: Get installation details bearer
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    method: GET
+    validate_certs: no
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+    return_content: yes
+  register: installation_bearer
+
+-
+  name: Get installation details
+  uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
@@ -119,13 +148,50 @@
   register: installation_text
 
 - set_fact: installation="{{ installation_text.content | from_json }}"
+- set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
-- name: encode bind credentials
-  asb_encode_binding:
-    fields:
-      uri: "http://{{ keycloak_route.stdout }}"
-      client_id: "{{ generated_username.stdout }}"
-      installation: "{{ installation | to_json }}"
-      name: keycloak
-      admin_user: "{{ ADMIN_NAME }}"
-      admin_pass: "{{ ADMIN_PASSWORD }}" 
+- name: Create bearer content file from template
+  template:
+    src: public-installation-content.json.j2
+    dest: /tmp/public-installation-content.json
+
+- name: Print bearer content file
+  shell: cat /tmp/public-installation-content.json
+  register: installation_content
+
+- set_fact: installation="{{ installation_content.stdout | from_json }}"
+
+- name: Create keycloak public client template
+  template:
+    src: public-client.yml.j2
+    dest: /tmp/client-raw.yaml
+
+- name: Create keycloak bearer client template
+  template:
+    src: bearer-client.yml.j2
+    dest: /tmp/bearer-client-raw.yaml
+
+- name: check file contents
+  shell: cat /tmp/bearer-client-raw.yaml
+  register: client_raw
+
+- debug: var=client_raw.stdout
+
+- name: Create keycloak public client secret
+  shell: oc create -f /tmp/bearer-client-raw.yaml
+
+- name: delete secret template file
+  file: path=/tmp/bearer-client-raw.yaml state=absent
+
+
+- name: check file contents
+  shell: cat /tmp/client-raw.yaml
+  register: bind_raw
+
+- debug: var=bind_raw.stdout
+
+- name: Create keycloak public client secret
+  shell: oc create -f /tmp/client-raw.yaml
+
+- name: delete secret template file
+  file: path=/tmp/client-raw.yaml state=absent
