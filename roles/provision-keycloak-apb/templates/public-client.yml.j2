@@ -5,6 +5,7 @@ metadata:
   namespace: {{ namespace }}
 stringData:
   name: keycloak
+  type: keycloak  
   installation: "{{ installation | regex_replace('(u\'|\')', '\\\"') }}"
   uri: http://{{ keycloak_route.stdout }}
   client_id: {{ generated_username.stdout }}
