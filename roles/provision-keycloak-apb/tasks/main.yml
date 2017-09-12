@@ -54,17 +54,6 @@
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
   register: keycloak_route
 
-- name: Create keycloak admin template
-  template:
-    src: admin-secret.yml.j2
-    dest: /tmp/admin-secret.yml
-
-- name: Create keycloak secret
-  shell: oc create -f /tmp/admin-secret.yml
-
-- name: delete secret template file
-  file: path=/tmp/admin-secret.yml state=absent
-
 - name: "Generate keycloak auth token"
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
@@ -97,7 +86,6 @@
   name: Generate Password
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
   register: generated_password
-
 
 -
   name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
@@ -150,48 +138,13 @@
 - set_fact: installation="{{ installation_text.content | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
-- name: Create bearer content file from template
-  template:
-    src: public-installation-content.json.j2
-    dest: /tmp/public-installation-content.json
-
-- name: Print bearer content file
-  shell: cat /tmp/public-installation-content.json
-  register: installation_content
-
-- set_fact: installation="{{ installation_content.stdout | from_json }}"
-
-- name: Create keycloak public client template
-  template:
-    src: public-client.yml.j2
-    dest: /tmp/client-raw.yaml
-
 - name: Create keycloak bearer client template
   template:
-    src: bearer-client.yml.j2
-    dest: /tmp/bearer-client-raw.yaml
-
-- name: check file contents
-  shell: cat /tmp/bearer-client-raw.yaml
-  register: client_raw
-
-- debug: var=client_raw.stdout
+    src: secret.yml.j2
+    dest: /tmp/secret.yaml
 
 - name: Create keycloak public client secret
-  shell: oc create -f /tmp/bearer-client-raw.yaml
+  shell: oc create -f /tmp/secret.yaml
 
 - name: delete secret template file
-  file: path=/tmp/bearer-client-raw.yaml state=absent
-
-
-- name: check file contents
-  shell: cat /tmp/client-raw.yaml
-  register: bind_raw
-
-- debug: var=bind_raw.stdout
-
-- name: Create keycloak public client secret
-  shell: oc create -f /tmp/client-raw.yaml
-
-- name: delete secret template file
-  file: path=/tmp/client-raw.yaml state=absent
+  file: path=/tmp/secret.yaml state=absent
