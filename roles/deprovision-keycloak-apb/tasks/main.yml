@@ -20,7 +20,5 @@
   name: delete secrets
   command: oc delete secret {{ item }}
   with_items:
-    - keycloak-public-client
-    - keycloak-bearer-client
-    - keycloak-admin
+    - keycloak
 
