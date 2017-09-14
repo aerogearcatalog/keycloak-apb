@@ -148,6 +148,7 @@
 
 - set_fact: installation="{{ installation_text.stdout | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
+- set_fact: namespace="{{namespace}}"
 
 - name: Create keycloak bearer client template
   template:
