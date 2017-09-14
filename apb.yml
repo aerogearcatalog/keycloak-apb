@@ -3,6 +3,8 @@ image: feedhenry/keycloak-apb
 description: Keycloak - secure key/value store
 bindable: True
 async: optional
+tags: 
+  - mobile-service
 metadata:
   displayName: Keycloak (APB)
 plans:
