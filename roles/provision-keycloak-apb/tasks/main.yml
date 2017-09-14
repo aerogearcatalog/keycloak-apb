@@ -136,6 +136,17 @@
   register: installation_text
 
 - set_fact: installation="{{ installation_text.content | from_json }}"
+
+- name: Create client config from template
+  template:
+    src: installation.json.j2
+    dest: /tmp/installation.json
+
+- name: Retrieve client config
+  shell: cat /tmp/installation.json
+  register: installation_text
+
+- set_fact: installation="{{ installation_text.stdout | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
 - name: Create keycloak bearer client template
