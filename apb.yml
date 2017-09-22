@@ -1,7 +1,7 @@
 name: keycloak-apb
 image: feedhenry/keycloak-apb
 description: Keycloak - secure key/value store
-bindable: True
+bindable: False
 async: optional
 tags: 
   - mobile-service
