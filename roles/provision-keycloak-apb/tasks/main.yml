@@ -70,7 +70,7 @@
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms"
     method: POST
-    body: "{\"id\": \"{{ namespace }}\", \"realm\": \"{{ namespace }}\", \"displayName\": \"{{ namespace }}\" }"
+    body: "{\"id\": \"{{ namespace }}\", \"realm\": \"{{ namespace }}\", \"enabled\": true, \"eventsEnabled\": true, \"eventsExpiration\": 7200,  \"displayName\": \"{{ namespace }}\" }"
     validate_certs: no
     body_format: json
     headers:
@@ -92,7 +92,7 @@
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
-    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\"}"
+    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\", \"redirectUris\":[\"http://localhost:*\"] }"
     validate_certs: no
     body_format: json
     headers:
