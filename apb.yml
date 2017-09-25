@@ -6,10 +6,11 @@ async: optional
 tags: 
   - mobile-service
 metadata:
-  displayName: Keycloak (APB)
+  displayName: Keycloak
+  console.openshift.io/iconClass: fa fa-users
 plans:
   - name: default
-    description: Deploy keycloak-apb
+    description: Deploy keycloak
     free: True
     metadata: {}
     parameters: 
