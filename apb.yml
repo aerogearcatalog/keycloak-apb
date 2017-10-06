@@ -1,7 +1,7 @@
 name: keycloak-apb
 image: feedhenry/keycloak-apb
 description: Keycloak - Open Source Identity and Access Management
-bindable: False
+bindable: True
 async: optional
 tags: 
   - mobile-service
@@ -24,3 +24,7 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    bind_parameters:
+    - name: service
+      title: Service client is for
+      type: string
