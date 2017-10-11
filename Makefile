@@ -1,4 +1,4 @@
-DOCKERORG = feedhenry
+DOCKERORG = maleck13
 USER=$(shell id -u)
 PWS=$(shell pwd)
 build_and_push: apb_build docker_push

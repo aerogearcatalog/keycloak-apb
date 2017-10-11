@@ -8,6 +8,7 @@ tags:
 metadata:
   displayName: Keycloak
   console.openshift.io/iconClass: fa fa-users
+  serviceName: keycloak
 plans:
   - name: default
     description: Deploy keycloak
