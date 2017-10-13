@@ -27,5 +27,5 @@ plans:
       title: Keycloak admin password
     bind_parameters:
     - name: service
-      title: Service client is for
+      title: The service the client is for
       type: string
