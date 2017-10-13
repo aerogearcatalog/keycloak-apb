@@ -1,6 +1,6 @@
 {
-  "name": "keycloak",
-  "installation": "{{ installation | regex_replace('(u\'|\')', '\\\"') }}",
+  "name": "keycloak-bearer",
+  "installation": "{{ installationbearer | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}",
   "uri": "http://{{ keycloak_route.stdout }}",
   "client_id": "{{ generated_username.stdout }}",
   "client_secret": "{{ generated_password.stdout }}"

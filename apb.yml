@@ -1,13 +1,14 @@
 name: keycloak-apb
 image: feedhenry/keycloak-apb
 description: Keycloak - Open Source Identity and Access Management
-bindable: False
+bindable: True
 async: optional
 tags: 
   - mobile-service
 metadata:
   displayName: Keycloak
   console.openshift.io/iconClass: fa fa-users
+  serviceName: keycloak
 plans:
   - name: default
     description: Deploy keycloak
@@ -24,3 +25,7 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    bind_parameters:
+    - name: service
+      title: The service the client is for
+      type: string
