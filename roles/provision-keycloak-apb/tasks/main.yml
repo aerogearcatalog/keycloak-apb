@@ -5,6 +5,7 @@
     labels:
       app: keycloak
       service: keycloak
+      name: keycloak
     replicas: 1
     selector:
       app: keycloak

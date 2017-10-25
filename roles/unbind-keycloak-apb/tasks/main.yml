@@ -1,0 +1,36 @@
+-
+  name: Generate Username
+  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
+  register: generated_username
+
+-
+  name: Generate Password
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: generated_password
+
+- 
+  name: "Retrieve route to keycloak"
+  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
+  register: keycloak_route
+
+- name: "Generate keycloak auth token"
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    method: POST
+    body: "client_id=admin-cli&username={{ provision_params.ADMIN_NAME }}&password={{ provision_params.ADMIN_PASSWORD }}&grant_type=password"
+    validate_certs: no
+  register: keycloak_auth_response
+  until: keycloak_auth_response.status == 200
+  retries: 600
+  delay: 2
+
+-
+  name: delete installation details bearer
+  uri:
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ _apb_bind_creds.resource }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    method: DELETE
+    validate_certs: no
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+    return_content: yes
