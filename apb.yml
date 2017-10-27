@@ -1,5 +1,5 @@
+version: 1.0
 name: keycloak-apb
-image: feedhenry/keycloak-apb
 description: Keycloak - Open Source Identity and Access Management
 bindable: True
 async: optional

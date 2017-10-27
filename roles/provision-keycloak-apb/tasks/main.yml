@@ -155,7 +155,7 @@
     dest: /tmp/secret.yaml
 
 - name: Create keycloak public client secret
-  shell: oc create -f /tmp/secret.yaml
+  shell: oc create -f /tmp/secret.yaml -n {{ namespace }}
 
 - name: delete secret template file
   file: path=/tmp/secret.yaml state=absent
