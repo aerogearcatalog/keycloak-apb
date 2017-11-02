@@ -18,7 +18,7 @@
 
 - 
   name: delete secrets
-  command: oc delete secret {{ item }}
+  command: oc delete secret {{ item }} -n {{namespace}}
   with_items:
     - keycloak
 
