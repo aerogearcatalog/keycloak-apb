@@ -1,17 +1,8 @@
--
-  name: Generate Username
-  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
-  register: generated_username
-
--
-  name: Generate Password
-  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
-  register: generated_password
-
 - 
   name: "Retrieve route to keycloak"
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
   register: keycloak_route
+- debug: msg="kc route = {{keycloak_route}}"
 
 - name: "Generate keycloak auth token"
   uri:
