@@ -6,6 +6,7 @@
       app: keycloak
       service: keycloak
       name: keycloak
+      mobile: enabled
     replicas: 1
     selector:
       app: keycloak
@@ -33,6 +34,7 @@
     labels:
       app: keycloak
       service: keycloak
+      mobile: enabled
     selector:
       app: keycloak
       service: keycloak
@@ -48,6 +50,7 @@
     labels:
       app: keycloak
       service: keycloak
+      mobile: enabled
     to_name: keycloak
     spec_port_target_port: web
 
