@@ -1,8 +1,9 @@
 DOCKERHOST = docker.io
 DOCKERORG = feedhenry
+IMAGENAME = keycloak-apb
 TAG = latest
 USER=$(shell id -u)
-PWS=$(shell pwd)
+PWD=$(shell pwd)
 LAST_COMMIT=$(shell git rev-parse HEAD)
 ORIGIN = origin
 
@@ -10,16 +11,16 @@ build_and_push: apb_build docker_push apb_push
 
 .PHONY: apb_build
 apb_build:
-	docker run --rm -u $(USER) -v $(PWD):/mnt:z feedhenry/apb prepare
-	docker build -t $(DOCKERHOST)/$(DOCKERORG)/keycloak-apb:$(TAG) .
+	docker run --rm --privileged -v $(PWD):/mnt:z -v $(HOME)/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $(USER) docker.io/ansibleplaybookbundle/apb:latest prepare
+	docker build -t $(DOCKERHOST)/$(DOCKERORG)/$(IMAGENAME):$(TAG) .
 
 .PHONY: docker_push
 docker_push:
-	docker push $(DOCKERHOST)/$(DOCKERORG)/keycloak-apb:$(TAG)
+	docker push $(DOCKERHOST)/$(DOCKERORG)/$(IMAGENAME):$(TAG)
 
 .PHONY: apb_push
 apb_push:
-	 docker run --rm -u $(USER) -v $(PWD):/mnt:z feedhenry/apb push
+	 docker run --rm --privileged -v $(PWD):/mnt:z -v $(HOME)/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $(USER) docker.io/ansibleplaybookbundle/apb:latest push
 
 .PHONY: apb_release
 apb_release:
@@ -34,3 +35,4 @@ apb_release:
     else
 				$(error Aborting release process, since local files are modified)
     endif
+
