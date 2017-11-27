@@ -20,7 +20,7 @@
         value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
-      image: docker.io/jimmidyson/keycloak-openshift:2.5.4.Final
+      image: docker.io/jboss/keycloak-openshift:3.4.0.Final
       name: keycloak
       ports:
       - container_port: 8080
