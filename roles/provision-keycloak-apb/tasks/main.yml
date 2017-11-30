@@ -69,12 +69,16 @@
   retries: 600
   delay: 2
 
--
-  name: "Create {{ namespace }} realm"
+- name: Generate namespace specific realm
+  template:
+    src: namespace_realm.json.j2
+    dest: /tmp/namespace_realm.json
+
+- name: "Create {{ namespace }} realm"
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/admin/realms"
     method: POST
-    body: "{\"id\": \"{{ namespace }}\", \"realm\": \"{{ namespace }}\", \"enabled\": true, \"eventsEnabled\": true, \"eventsExpiration\": 7200,  \"displayName\": \"{{ namespace }}\" }"
+    body: "{{ lookup('file','/tmp/namespace_realm.json') }}"
     validate_certs: no
     body_format: json
     headers:
