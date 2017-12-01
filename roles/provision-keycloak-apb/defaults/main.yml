@@ -1,2 +1,3 @@
 ---
 playbook_debug: no
+keycloak_image_tag: latest

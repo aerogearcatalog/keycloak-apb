@@ -1,3 +1,13 @@
+- name: create persistent volume claim for metrics
+  k8s_v1_persistent_volume_claim:
+    name: keycloak-metrics
+    state: present
+    namespace: '{{ namespace }}'
+    spec_access_modes: [ReadWriteMany]
+    spec_resources_requests:
+      storage: 10Gi
+  register: create_volume_claim
+
 - name: create deployment config
   openshift_v1_deployment_config:
     name: keycloak
@@ -14,18 +24,35 @@
     spec_template_metadata_labels:
       app: keycloak
       service: keycloak
+    volumes:
+    - name: 'keycloak-metrics'
+      persistent_volume_claim:
+        claim_name: 'keycloak-metrics'
     containers:
     - env:
       - name: KEYCLOAK_USER
         value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
-      image: docker.io/jboss/keycloak-openshift:3.4.0.Final
+      image: 'docker.io/feedhenry/keycloak-prometheus:{{ keycloak_image_tag }}'
       name: keycloak
       ports:
       - container_port: 8080
         protocol: TCP
-
+      volume_mounts:
+      - mount_path: /opt/jboss/metrics
+        name: 'keycloak-metrics'
+    - image: 'docker.io/larscheidschmitzhermes/prometheus-filesystem-exporter:0.3.1'
+      name: prometheus-fs-exporter
+      command: ['./prometheus-filesystem-exporter']
+      args: ['--listen-addr=:8081']
+      ports:
+      - container_port: 8081
+        protocol: TCP
+      volume_mounts:
+      - mount_path: /metrics
+        name: 'keycloak-metrics'
+  register: create_dc
 
 - name: create keycloak service
   k8s_v1_service:
@@ -42,6 +69,24 @@
       - name: web
         port: 80
         target_port: 8080
+
+- name: create keycloak-metrics service
+  k8s_v1_service:
+    name: keycloak-metrics
+    namespace: '{{ namespace }}'
+    labels:
+      app: keycloak
+      service: keycloak
+      mobile: enabled
+    annotations:
+      org.feedhenry.mcp/prometheus: "plain"
+    selector:
+      app: keycloak
+      service: keycloak
+    ports:
+      - name: web
+        port: 80
+        target_port: 8081
 
 - name: create keycloak route
   openshift_v1_route:
