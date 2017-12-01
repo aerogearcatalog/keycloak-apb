@@ -3,6 +3,7 @@
   "realm": "{{ namespace }}",
   "enabled": true,
   "eventsEnabled": true,
-  "eventsExpiration": 7200, 
-  "displayName": "{{ namespace }}"
+  "eventsExpiration": 7200,
+  "displayName": "{{ namespace }}",
+  "eventsListeners": ["jboss-logging", "com.larscheidschmitzhermes:keycloak-monitoring-prometheus"]
 }
