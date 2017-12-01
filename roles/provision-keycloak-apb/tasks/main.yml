@@ -27,7 +27,7 @@
     volumes:
     - name: 'keycloak-metrics'
       persistent_volume_claim:
-        claim_name: 'keycloak-metrics'
+        claim_name: keycloak-metrics
     containers:
     - env:
       - name: KEYCLOAK_USER
@@ -41,7 +41,29 @@
         protocol: TCP
       volume_mounts:
       - mount_path: /opt/jboss/metrics
-        name: 'keycloak-metrics'
+        name: keycloak-metrics
+
+
+- name: create metrics deployment config
+  openshift_v1_deployment_config:
+    name: keycloak-metrics
+    namespace: '{{ namespace }}'
+    labels:
+      app: keycloak
+      service: keycloak-metrics
+      name: keycloak-metrics
+    replicas: 1
+    selector:
+      app: keycloak
+      service: keycloak-metrics
+    spec_template_metadata_labels:
+      app: keycloak
+      service: keycloak-metrics
+    volumes:
+    - name: keycloak-metrics
+      persistent_volume_claim:
+        claim_name: keycloak-metrics
+    containers:
     - image: 'docker.io/larscheidschmitzhermes/prometheus-filesystem-exporter:0.3.1'
       name: prometheus-fs-exporter
       command: ['./prometheus-filesystem-exporter']
@@ -51,8 +73,7 @@
         protocol: TCP
       volume_mounts:
       - mount_path: /metrics
-        name: 'keycloak-metrics'
-  register: create_dc
+        name: keycloak-metrics
 
 - name: create keycloak service
   k8s_v1_service:
@@ -76,13 +97,13 @@
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
-      service: keycloak
+      service: keycloak-metrics
       mobile: enabled
     annotations:
       org.feedhenry.mcp/prometheus: "plain"
     selector:
       app: keycloak
-      service: keycloak
+      service: keycloak-metrics
     ports:
       - name: web
         port: 80
