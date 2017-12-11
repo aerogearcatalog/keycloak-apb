@@ -1,3 +1,11 @@
+- name: copy postgres template
+  template:
+    src: postgresql-persistent.yml.j2
+    dest: /tmp/postgresql-persistent.yml
+
+- name: create postgres from template
+  shell: oc process -f  /tmp/postgresql-persistent.yml | oc create -n {{ namespace }} -f -
+
 - name: create persistent volume claim for metrics
   k8s_v1_persistent_volume_claim:
     name: keycloak-metrics
@@ -37,15 +45,29 @@
     - name: keycloak-metrics
       persistent_volume_claim:
         claim_name: keycloak-metrics
-    - name: keycloak-config
-      config_map:
-        name: keycloak-config
     containers:
     - env:
       - name: KEYCLOAK_USER
         value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
+      - name: KEYCLOAK_PROMETHEUS_EVENTS_DIR
+        value: /opt/jboss/metrics
+      - name: POSTGRES_USER
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-user
+      - name: POSTGRES_PASSWORD
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-password
+      - name: POSTGRES_DATABASE
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-name
       image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
       name: keycloak
       ports:
@@ -58,9 +80,6 @@
       - mount_path: /opt/jboss/keycloak/providers/
         name: keycloak-metrics
         sub_path: providers/
-      - mount_path: /opt/jboss/keycloak/standalone/configuration/standalone.xml
-        name: keycloak-config
-        sub_path: standalone.xml
 
 - name: create metrics deployment config
   openshift_v1_deployment_config:
@@ -145,7 +164,7 @@
   register: keycloak_route
 
 - copy:
-    src: keycloak-monitoring-prometheus-master.jar
+    src: keycloak-monitoring-prometheus.jar
     dest: /tmp/keycloak-monitoring-prometheus-master.jar
 
 - shell: oc get pods -n {{ namespace }} | grep keycloak | grep -v keycloak-metrics | grep -v deploy | awk '{ print $1 }'
