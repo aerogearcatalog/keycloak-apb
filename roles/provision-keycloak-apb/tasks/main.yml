@@ -16,15 +16,6 @@
       storage: 10Gi
   register: create_volume_claim
 
-- name: Create configmap yaml from template
-  template:
-    src: keycloak-config.configmap.yml.j2
-    dest: /tmp/keycloak-config.configmap.yml
-
-- name: Create keycloak configmap
-  k8s_v1_config_map:
-    src: /tmp/keycloak-config.configmap.yml
-
 - name: create deployment config
   openshift_v1_deployment_config:
     name: keycloak
