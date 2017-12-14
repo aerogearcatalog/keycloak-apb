@@ -1,3 +1,9 @@
 ---
 playbook_debug: no
-keycloak_image_tag: latest
+keycloak_image_tag: 3.4.1.Final
+
+postgres_image: centos/postgresql-95-centos7
+postgres_image_tag: '9.5'
+postgres_secret_name: keycloak-postgres
+postgres_database_name: keycloak
+postgres_service_name: postgres

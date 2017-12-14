@@ -1,3 +1,11 @@
+- name: copy postgres template
+  template:
+    src: postgresql-persistent.yml.j2
+    dest: /tmp/postgresql-persistent.yml
+
+- name: create postgres from template
+  shell: oc process -f  /tmp/postgresql-persistent.yml | oc create -n {{ namespace }} -f -
+
 - name: create persistent volume claim for metrics
   k8s_v1_persistent_volume_claim:
     name: keycloak-metrics
@@ -25,7 +33,7 @@
       app: keycloak
       service: keycloak
     volumes:
-    - name: 'keycloak-metrics'
+    - name: keycloak-metrics
       persistent_volume_claim:
         claim_name: keycloak-metrics
     containers:
@@ -34,7 +42,24 @@
         value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
-      image: 'docker.io/feedhenry/keycloak-prometheus:{{ keycloak_image_tag }}'
+      - name: KEYCLOAK_PROMETHEUS_EVENTS_DIR
+        value: /opt/jboss/metrics
+      - name: POSTGRES_USER
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-user
+      - name: POSTGRES_PASSWORD
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-password
+      - name: POSTGRES_DATABASE
+        value_from:
+          secret_key_ref:
+            name: postgres
+            key: database-name
+      image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
       name: keycloak
       ports:
       - container_port: 8080
@@ -42,7 +67,10 @@
       volume_mounts:
       - mount_path: /opt/jboss/metrics
         name: keycloak-metrics
-
+        sub_path: events/
+      - mount_path: /opt/jboss/keycloak/providers/
+        name: keycloak-metrics
+        sub_path: providers/
 
 - name: create metrics deployment config
   openshift_v1_deployment_config:
@@ -67,13 +95,15 @@
     - image: 'docker.io/larscheidschmitzhermes/prometheus-filesystem-exporter:0.3.1'
       name: prometheus-fs-exporter
       command: ['./prometheus-filesystem-exporter']
-      args: ['--listen-addr=:8081']
+      args: ['--listen-addr=:8081', '--metrics-directory=/metrics/']
       ports:
       - container_port: 8081
         protocol: TCP
       volume_mounts:
       - mount_path: /metrics
         name: keycloak-metrics
+        sub_path: events/
+  register: dc_create
 
 - name: create keycloak service
   k8s_v1_service:
@@ -123,6 +153,20 @@
 - name: "Retrieve route to keycloak"
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
   register: keycloak_route
+
+- copy:
+    src: keycloak-monitoring-prometheus.jar
+    dest: /tmp/keycloak-monitoring-prometheus-master.jar
+
+- shell: oc get pods -n {{ namespace }} | grep keycloak | grep -v keycloak-metrics | grep -v deploy | awk '{ print $1 }'
+  register: get_pods
+
+- name: Copy jar into keycloaks metrics
+  shell: oc cp /tmp/keycloak-monitoring-prometheus-master.jar {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/providers/
+  register: copy_jar
+  retries: 10
+  until: copy_jar.rc == 0
+  delay: 2
 
 - name: "Generate keycloak auth token"
   uri:
