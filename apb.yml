@@ -7,7 +7,9 @@ tags:
   - mobile-service
 metadata:
   displayName: Keycloak
-  console.openshift.io/iconClass: fa fa-users
+  imageUrl: "https://pbs.twimg.com/profile_images/702119821979344897/oAC05cEB_400x400.png"
+  documentationUrl: "http://www.keycloak.org/documentation.html"
+  providerDisplayName: "Red Hat, Inc."
   serviceName: keycloak
 plans:
   - name: default
