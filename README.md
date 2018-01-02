@@ -1,8 +1,8 @@
 # Keycloak APB
 
-[![](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/feedhenry/keycloak-apb/)
-[![Docker Stars](https://img.shields.io/docker/stars/feedhenry/keycloak-apb.svg?style=plastic)](https://registry.hub.docker.com/v2/repositories/feedhenry/keycloak-apb/stars/count/)
-[![Docker pulls](https://img.shields.io/docker/pulls/feedhenry/keycloak-apb.svg?style=plastic)](https://registry.hub.docker.com/v2/repositories/feedhenry/keycloak-apb/)
+[![](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/aerogearcatalog/keycloak-apb/)
+[![Docker Stars](https://img.shields.io/docker/stars/aerogearcatalog/keycloak-apb.svg?style=plastic)](https://registry.hub.docker.com/v2/repositories/aerogearcatalog/keycloak-apb/stars/count/)
+[![Docker pulls](https://img.shields.io/docker/pulls/aerogearcatalog/keycloak-apb.svg?style=plastic)](https://registry.hub.docker.com/v2/repositories/aerogearcatalog/keycloak-apb/)
 [![License](https://img.shields.io/:license-Apache2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 ## Requirements
