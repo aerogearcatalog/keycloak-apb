@@ -1,12 +1,6 @@
-- name: generate username
-  shell: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13 ; echo ''
-  register: gen_username
-
 - name: generate password
   shell: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13 ; echo ''
   register: gen_password
-
-- debug: msg="{{ gen_username }}"
 
 - k8s_v1_secret:
     name: '{{ postgres_secret_name }}'
