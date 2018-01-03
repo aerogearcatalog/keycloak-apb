@@ -4,21 +4,40 @@
     namespace: '{{ namespace }}'
     state: absent
 
-- name: delete service
+- name: delete services
   k8s_v1_service:
-    name: keycloak
+    name: '{{ item }}'
     namespace: '{{ namespace }}'
     state: absent
-
-- name: delete deployment config
-  openshift_v1_deployment_config:
-    name: keycloak
-    namespace: '{{ namespace }}'
-    state: absent
-
-- 
-  name: delete secrets
-  command: oc delete secret {{ item }} -n {{namespace}}
   with_items:
-    - keycloak
+  - keycloak
+  - postgres
+  - keycloak-metrics
 
+- name: delete deployment configs
+  openshift_v1_deployment_config:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak
+  - postgres
+  - keycloak-metrics
+
+- name: delete secrets
+  k8s_v1_secret:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak
+  - keycloak-postgres
+
+- name: delete persistent volume claims
+  k8s_v1_persistent_volume_claim:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak-metrics
+  - postgres
