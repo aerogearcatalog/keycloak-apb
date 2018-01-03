@@ -36,6 +36,8 @@
         value: '{{ ADMIN_PASSWORD }}'
       - name: KEYCLOAK_PROMETHEUS_EVENTS_DIR
         value: /opt/jboss/metrics
+      - name: PROXY_ADDRESS_FORWARDING
+        value: 'true'
       - name: POSTGRES_USER
         value_from:
           secret_key_ref:
@@ -140,6 +142,8 @@
       app: keycloak
       service: keycloak
       mobile: enabled
+    tls_termination: edge
+    tls_insecure_edge_termination_policy: Redirect
     to_name: keycloak
     spec_port_target_port: web
 
@@ -163,7 +167,7 @@
 
 - name: "Generate keycloak auth token"
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    url: "https://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
     body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
@@ -179,7 +183,7 @@
 
 - name: "Create {{ namespace }} realm"
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms"
     method: POST
     body: "{{ lookup('file','/tmp/namespace_realm.json') }}"
     validate_certs: no
@@ -199,7 +203,7 @@
 
 - name: "Create UPS realm"
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms"
     method: POST
     body: "{{ lookup('file','/tmp/push_realm.json') }}"
     validate_certs: no
@@ -221,7 +225,7 @@
 -
   name: "Create {{ generated_username.stdout }} client in realm {{ namespace }}"
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
     body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\", \"redirectUris\":[\"http://localhost:*\"], \"webOrigins\":[\"http://localhost:8100\"] }"
     validate_certs: no
@@ -233,7 +237,7 @@
 -
   name: "Create {{ generated_username.stdout }}-bearer client in realm {{ namespace }}"
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
     body: "{\"id\": \"{{ generated_username.stdout }}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
     validate_certs: no
@@ -245,7 +249,7 @@
 -
   name: Get installation details bearer
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
@@ -257,7 +261,7 @@
 -
   name: Get installation details
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
+    url: "https://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
