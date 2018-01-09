@@ -157,9 +157,9 @@
 - name: Copy jar into keycloaks metrics
   shell: oc cp /tmp/keycloak-monitoring-prometheus-master.jar {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/providers/
   register: copy_jar
-  retries: 10
+  retries: 60
   until: copy_jar.rc == 0
-  delay: 2
+  delay: 5
 
 - name: "Generate keycloak auth token"
   uri:
