@@ -8,8 +8,8 @@
   uri:
     url: "http://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ provision_params.ADMIN_NAME }}&password={{
-      provision_params.ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ _apb_provision_creds.ADMIN_NAME }}&password={{
+      _apb_provision_creds.ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200
@@ -21,12 +21,12 @@
     verbosity: 2
 
 -
-  name: delete installation details bearer
+  name: delete client {{ _apb_bind_creds.resource }} in realm {{ namespace }}
   uri:
-    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ _apb_bind_creds.resource }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    url: "http://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ _apb_bind_creds.resource }}"
     method: DELETE
     validate_certs: no
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 200
+    status_code: 204
     return_content: yes
