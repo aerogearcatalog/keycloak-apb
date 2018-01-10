@@ -290,3 +290,9 @@
 
 - name: delete secret template file
   file: path=/tmp/secret.yaml state=absent
+
+- name: encode admin user credentials
+  asb_encode_binding:
+    fields:
+      ADMIN_NAME: "{{ ADMIN_NAME }}"
+      ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
