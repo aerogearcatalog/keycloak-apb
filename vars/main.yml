@@ -1,0 +1,4 @@
+---
+
+# http or https.
+keycloak_protocol: https
