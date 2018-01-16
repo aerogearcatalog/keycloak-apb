@@ -296,3 +296,7 @@
     fields:
       ADMIN_NAME: "{{ ADMIN_NAME }}"
       ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
+
+- name: Create keycloak service account
+  shell: oc create serviceaccount keycloak -n=myproject
+  register: keycloak_sa
