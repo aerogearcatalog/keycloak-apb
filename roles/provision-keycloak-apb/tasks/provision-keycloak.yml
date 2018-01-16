@@ -1,3 +1,7 @@
+- name: generate truststore password
+  shell: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13 ; echo ''
+  register: gen_truststore_password
+
 - name: create persistent volume claim for metrics
   k8s_v1_persistent_volume_claim:
     name: keycloak-metrics
@@ -54,7 +58,7 @@
             name: '{{ postgres_secret_name }}'
             key: database-name
       - name: JAVA_OPTS
-        value: -Djavax.net.ssl.trustStore=/opt/jboss/keycloak/keystore/application.keystore -Djavax.net.ssl.trustStorePassword=changeit -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true
+        value: -Djavax.net.ssl.trustStore=/opt/jboss/keycloak/keystore/application.keystore -Djavax.net.ssl.trustStorePassword={{ gen_truststore_password.stdout }} -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true
       image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
       name: keycloak
       ports:
@@ -184,7 +188,7 @@
   delay: 5
 
 - name: Retrieve OpenShift cluster certificate
-  shell: echo -n “” | openssl s_client -connect $KUBERNETES_PORT_443_TCP_ADDR:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/cert.pem
+  shell: echo -n "" | openssl s_client -connect $KUBERNETES_PORT_443_TCP_ADDR:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/cert.pem
 
 - copy:
     src: configure-keystore.sh
@@ -203,7 +207,7 @@
   until: copy_startup_script.rc == 0
 
 - name: Run configure keystore script
-  shell: oc exec --namespace {{ namespace }} {{ get_pods.stdout }} bash /opt/jboss/keycloak/keystore/configure-keystore.sh
+  shell: oc exec --namespace {{ namespace }} {{ get_pods.stdout }} bash /opt/jboss/keycloak/keystore/configure-keystore.sh {{ gen_truststore_password.stdout }}
 
 - name: "Generate keycloak auth token"
   uri:
@@ -340,3 +344,4 @@
     fields:
       ADMIN_NAME: "{{ ADMIN_NAME }}"
       ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
+      TRUSTSTORE_PASSWORD: "{{ gen_truststore_password.stdout }}"
