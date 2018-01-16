@@ -51,6 +51,8 @@
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-name
+      - name: JAVA_OPTS
+        value: -Djavax.net.ssl.trustStore=/opt/jboss/keycloak/keystore/application.keystore -Djavax.net.ssl.trustStorePassword=changeit -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true
       image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
       name: keycloak
       ports:
@@ -63,6 +65,9 @@
       - mount_path: /opt/jboss/keycloak/providers/
         name: keycloak-metrics
         sub_path: providers/
+      - mount_path: /opt/jboss/keycloak/keystore/
+        name: keycloak-metrics
+        sub_path: keystore/
 
 - name: create metrics deployment config
   openshift_v1_deployment_config:
@@ -160,6 +165,28 @@
   retries: 60
   until: copy_jar.rc == 0
   delay: 5
+
+- name: Retrieve OpenShift cluster certificate
+  shell: echo -n “” | openssl s_client -connect $KUBERNETES_PORT_443_TCP_ADDR:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/cert.pem
+
+- copy:
+    src: configure-keystore.sh
+    dest: /tmp/configure-keystore.sh
+
+- name: Copy certificate into keystore directory
+  shell: oc cp /tmp/cert.pem {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/keystore/cert.pem
+  register: copy_cert
+  retries: 60
+  until: copy_cert.rc == 0
+  delay: 5
+
+- name: Copy script into keystore directory
+  shell: oc cp /tmp/configure-keystore.sh {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/keystore/
+  register: copy_startup_script
+  until: copy_startup_script.rc == 0
+
+- name: Run configure keystore script
+  shell: oc exec --namespace {{ namespace }} {{ get_pods.stdout }} bash /opt/jboss/keycloak/keystore/configure-keystore.sh
 
 - name: "Generate keycloak auth token"
   uri:
