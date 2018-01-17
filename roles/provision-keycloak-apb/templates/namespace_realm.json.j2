@@ -9,7 +9,6 @@
   "identityProviders" : [
       {
           "alias":"{{ openshift_v3_id }}",
-          "internalId":"{{ openshift_v3_internalId }}",
           "providerId":"{{ openshift_v3_id }}",
           "enabled":true,
           "updateProfileFirstLoginMode":"on",
@@ -24,8 +23,9 @@
               "baseUrl":"{{ base_url_dev }}",
               "clientId":"{{ keycloak_clientId }}",
               "disableUserInfo":"",
-              "clientSecret":"{{ keycloak_auth_response.json.access_token }}",
-              "useJwksUrl":"true"
+              "clientSecret":"{{ keycloak_client_secret.stdout }}",
+              "useJwksUrl":"true",
+              "defaultScope": "user:info"
           },
           "postBrokerLoginFlowAlias":""
       }

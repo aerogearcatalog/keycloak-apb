@@ -172,6 +172,17 @@
   retries: 600
   delay: 2
 
+- name: Create keycloak service account
+  k8s_v1_service_account:  
+    name: keycloak  
+    namespace: "{{ namespace }}"
+    annotations:                  
+      serviceaccounts.openshift.io/oauth-redirectreference.keycloak: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"keycloak"}}'
+      
+- name: Get keycloak client secret
+  shell: oc sa get-token keycloak -n={{ namespace }}
+  register: keycloak_client_secret
+
 - name: Generate namespace specific realm
   template:
     src: namespace_realm.json.j2
@@ -296,7 +307,3 @@
     fields:
       ADMIN_NAME: "{{ ADMIN_NAME }}"
       ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
-
-- name: Create keycloak service account
-  shell: oc create serviceaccount keycloak -n=myproject
-  register: keycloak_sa
