@@ -12,7 +12,6 @@
   with_items:
   - keycloak
   - postgres
-  - keycloak-metrics
 
 - name: delete deployment configs
   openshift_v1_deployment_config:
@@ -22,7 +21,6 @@
   with_items:
   - keycloak
   - postgres
-  - keycloak-metrics
 
 - name: delete secrets
   k8s_v1_secret:
