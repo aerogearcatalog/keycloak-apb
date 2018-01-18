@@ -205,26 +205,6 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
 
-- name: "Generate Push URI"
-  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}' | cut -c 9-"
-  register: push_route
-
-- name: Generate push specific realm
-  template:
-    src: push_realm.json.j2
-    dest: /tmp/push_realm.json
-
-- name: "Create UPS realm"
-  uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms"
-    method: POST
-    body: "{{ lookup('file','/tmp/push_realm.json') }}"
-    validate_certs: no
-    body_format: json
-    headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 201
-
 -
   name: Generate Username
   shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
