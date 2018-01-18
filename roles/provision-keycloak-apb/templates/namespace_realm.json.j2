@@ -5,5 +5,29 @@
   "eventsEnabled": true,
   "eventsExpiration": 7200,
   "displayName": "{{ namespace }}",
-  "eventsListeners": ["jboss-logging", "com.larscheidschmitzhermes:keycloak-monitoring-prometheus"]
+  "eventsListeners": ["jboss-logging", "com.larscheidschmitzhermes:keycloak-monitoring-prometheus"],
+  "identityProviders" : [
+      {
+          "alias":"{{ openshift_v3_id }}",
+          "providerId":"{{ openshift_v3_id }}",
+          "enabled":true,
+          "updateProfileFirstLoginMode":"on",
+          "trustEmail":false,
+          "storeToken":false,
+          "addReadTokenRoleOnCreate":false,
+          "authenticateByDefault":false,
+          "linkOnly":false,
+          "firstBrokerLoginFlowAlias":"first broker login",
+          "config": {
+              "hideOnLoginPage":"",
+              "baseUrl":"{{ base_url_dev }}",
+              "clientId":"{{ keycloak_clientId }}",
+              "disableUserInfo":"",
+              "clientSecret":"{{ keycloak_client_secret.stdout }}",
+              "useJwksUrl":"true",
+              "defaultScope": "user:info"
+          },
+          "postBrokerLoginFlowAlias":""
+      }
+  ]
 }

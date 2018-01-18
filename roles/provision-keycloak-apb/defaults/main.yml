@@ -1,6 +1,11 @@
 ---
 playbook_debug: no
 keycloak_image_tag: 3.4.3.Final
+keycloak_clientId: system:serviceaccount:{{ namespace }}:keycloak
+
+openshift_v3_id: openshift-v3
+
+base_url_dev: https://192.168.37.1:8443
 
 postgres_image: centos/postgresql-95-centos7
 postgres_image_tag: '9.5'
