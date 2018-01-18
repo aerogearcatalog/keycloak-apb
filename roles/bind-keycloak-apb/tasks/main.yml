@@ -34,7 +34,8 @@
     body_format: json
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 201
+    status_code: 201, 409
+
 
 -
   name: Get installation details bearer
