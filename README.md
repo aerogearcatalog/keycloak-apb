@@ -5,6 +5,10 @@
 [![Docker pulls](https://img.shields.io/docker/pulls/aerogearcatalog/keycloak-apb.svg?style=plastic)](https://registry.hub.docker.com/v2/repositories/aerogearcatalog/keycloak-apb/)
 [![License](https://img.shields.io/:license-Apache2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
+## Overview
+
+For an overview of what each task does, please check the [APB overview file](./apb_overview.md).
+
 ## Requirements
 - [apb](https://github.com/fusor/ansible-playbook-bundle/blob/master/README.md#installing-the-apb-tool)
 
