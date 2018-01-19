@@ -1,11 +1,11 @@
-- name: create persistent volume claim for metrics
+- name: create persistent volume claim to copy the SPI provider
   k8s_v1_persistent_volume_claim:
     name: keycloak-metrics
     state: present
     namespace: '{{ namespace }}'
     access_modes: [ReadWriteMany]
     spec_resources_requests:
-      storage: 10Gi
+      storage: 10M
   register: create_volume_claim
 
 - name: create deployment config
@@ -34,8 +34,6 @@
         value: '{{ ADMIN_NAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
-      - name: KEYCLOAK_PROMETHEUS_EVENTS_DIR
-        value: /opt/jboss/metrics
       - name: PROXY_ADDRESS_FORWARDING
         value: 'true'
       - name: POSTGRES_USER
@@ -59,46 +57,9 @@
       - container_port: 8080
         protocol: TCP
       volume_mounts:
-      - mount_path: /opt/jboss/metrics
-        name: keycloak-metrics
-        sub_path: events/
       - mount_path: /opt/jboss/keycloak/providers/
         name: keycloak-metrics
         sub_path: providers/
-
-- name: create metrics deployment config
-  openshift_v1_deployment_config:
-    name: keycloak-metrics
-    namespace: '{{ namespace }}'
-    labels:
-      app: keycloak
-      service: keycloak-metrics
-      name: keycloak-metrics
-    replicas: 1
-    selector:
-      app: keycloak
-      service: keycloak-metrics
-    spec_template_metadata_labels:
-      app: keycloak
-      service: keycloak-metrics
-    volumes:
-    - name: keycloak-metrics
-      persistent_volume_claim:
-        claim_name: keycloak-metrics
-    containers:
-    - image: 'docker.io/larscheidschmitzhermes/prometheus-filesystem-exporter:0.3.1'
-      name: prometheus-fs-exporter
-      command: ['./prometheus-filesystem-exporter']
-      args: ['--listen-addr=:8081', '--metrics-directory=/metrics/']
-      ports:
-      - container_port: 8081
-        target_port: 80
-        protocol: TCP
-      volume_mounts:
-      - mount_path: /metrics
-        name: keycloak-metrics
-        sub_path: events/
-  register: dc_create
 
 - name: create keycloak service
   k8s_v1_service:
@@ -115,24 +76,6 @@
     - name: web
       port: 80
       target_port: 8080
-
-- name: create keycloak-metrics service
-  k8s_v1_service:
-    name: keycloak-metrics
-    namespace: '{{ namespace }}'
-    labels:
-      app: keycloak
-      service: keycloak-metrics
-      mobile: enabled
-    annotations:
-      org.feedhenry.mcp/prometheus: "plain"
-    selector:
-      app: keycloak
-      service: keycloak-metrics
-    ports:
-    - name: web
-      port: 80
-      target_port: 8081
 
 - name: create keycloak http route
   openshift_v1_route:
@@ -165,14 +108,14 @@
   register: keycloak_route
 
 - copy:
-    src: keycloak-monitoring-prometheus.jar
-    dest: /tmp/keycloak-monitoring-prometheus-master.jar
+    src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
+    dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
 - shell: oc get pods -n {{ namespace }} | grep keycloak | grep -v keycloak-metrics | grep -v postgres | grep -v deploy | awk '{ print $1 }'
   register: get_pods
 
 - name: Copy jar into keycloaks metrics
-  shell: oc cp /tmp/keycloak-monitoring-prometheus-master.jar {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/providers/
+  shell: oc cp /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/providers/
   register: copy_jar
   retries: 60
   until: copy_jar.rc == 0
