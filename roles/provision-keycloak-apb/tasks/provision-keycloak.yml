@@ -65,6 +65,8 @@
   k8s_v1_service:
     name: keycloak
     namespace: '{{ namespace }}'
+    annotations:
+      org.aerogear.metrics/plain_endpoint:  /auth/realms/master/metrics
     labels:
       app: keycloak
       service: keycloak
