@@ -90,7 +90,6 @@
       mobile: enabled
     to_name: keycloak
     spec_port_target_port: web
-  register: keycloak_route
   when: keycloak_protocol == 'http'
 
 - name: create keycloak https route
@@ -105,7 +104,6 @@
     tls_insecure_edge_termination_policy: Redirect
     to_name: keycloak
     spec_port_target_port: web
-  register: keycloak_route
   when: keycloak_protocol == 'https'
 
 - name: "Retrieve route to keycloak"
@@ -116,7 +114,7 @@
     src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
-- shell: oc get pods -n {{ namespace }} | grep keycloak | grep -v keycloak-metrics | grep -v postgres | grep -v deploy | awk '{ print $1 }'
+- shell: oc get pods --namespace {{ namespace }} --selector="deploymentconfig=keycloak" | awk 'NR > 1 {print $1}'
   register: get_pods
 
 - name: Copy jar into keycloaks metrics
