@@ -1,0 +1,14 @@
+---
+
+- name: Check that the keycloak webpage is accessible
+  uri:
+    url: "https://{{ keycloak_route.route.spec.host }}"
+    return_content: yes
+    validate_certs: no
+  register: webpage
+  retries: 10
+  delay: 20
+  failed_when:
+    - webpage.status == 403
+    - '"Welcome to Keycloak" not in webpage.content'
+  until: '"Welcome to Keycloak" in webpage.content'
