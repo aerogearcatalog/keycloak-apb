@@ -65,6 +65,9 @@
   k8s_v1_service:
     name: keycloak
     namespace: '{{ namespace }}'
+    annotations:
+      # this only works with the custom JAR (SPI impl) https://github.com/aerogear/keycloak-metrics-spi
+      org.aerogear.metrics/plain_endpoint:  /auth/realms/master/metrics
     labels:
       app: keycloak
       service: keycloak
