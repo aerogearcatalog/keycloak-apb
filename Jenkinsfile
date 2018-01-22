@@ -28,7 +28,7 @@ node ('apb-test') {
                     def buildSelector = nb.narrow("bc").related("builds")
 
                     try {
-                        timeout(5) {
+                        timeout(15) {
                             buildSelector.untilEach(1) {
                                 buildPhase = it.object().status.phase
                                 println("Build phase:" + buildPhase)
@@ -57,7 +57,7 @@ node ('apb-test') {
                     podSelector = openshift.selector("pod", "testing-pod")
 
                     try {
-                        timeout(5) {
+                        timeout(15) {
                             podSelector.untilEach(1) {
                                 podPhase = it.object().status.phase
                                 println("Pod status:" + podPhase)
