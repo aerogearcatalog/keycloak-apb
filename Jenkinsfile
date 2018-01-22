@@ -49,6 +49,8 @@ node ('apb-test') {
                         "testing-pod",
                         "--image=docker-registry.default.svc:5000/${projectName}/${repositoryName}",
                         "--restart=Never",
+                        "--env POD_NAME=testing-pod",
+                        "--env POD_NAMESPACE=${projectName}",
                         "--command", "--",
                         "entrypoint.sh test --extra-vars '{\"namespace\": \"${projectName}\"}'"
                     )
