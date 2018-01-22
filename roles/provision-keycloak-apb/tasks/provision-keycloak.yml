@@ -114,7 +114,7 @@
     src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
-- shell: oc get pods -n {{ namespace }} | grep keycloak | grep -v keycloak-metrics | grep -v postgres | grep -v deploy | awk '{ print $1 }'
+- shell: oc get pods --namespace {{ namespace }} --selector="deploymentconfig=keycloak" | awk 'NR > 1 {print $1}'
   register: get_pods
 
 - name: Copy jar into keycloaks metrics
