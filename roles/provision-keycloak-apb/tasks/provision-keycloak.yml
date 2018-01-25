@@ -223,16 +223,27 @@
 - set_fact: installation="{{ installation_text.stdout | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
+- k8s_v1_secret:
+    name: keycloak
+    namespace: '{{ namespace }}'
+    labels:
+      name: keycloak
+      mobile: enabled
+      serviceName: keycloak
+    string_data:
+      admin_username: '{{ ADMIN_NAME }}'
+      admin_password: '{{ ADMIN_PASSWORD }}'
+
 - name: Create keycloak bearer client template
   template:
-    src: secret.yml.j2
-    dest: /tmp/secret.yaml
+    src: configmap.yml.j2
+    dest: /tmp/configmap.yaml
 
-- name: Create keycloak public client secret
-  shell: oc create -f /tmp/secret.yaml -n {{ namespace }}
+- name: Create keycloak public client config map
+  shell: oc create -f /tmp/configmap.yaml -n {{ namespace }}
 
-- name: delete secret template file
-  file: path=/tmp/secret.yaml state=absent
+- name: delete configmap template file
+  file: path=/tmp/configmap.yaml state=absent
 
 - name: encode admin user credentials
   asb_encode_binding:
