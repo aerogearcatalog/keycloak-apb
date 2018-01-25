@@ -21,8 +21,9 @@
     verbosity: 2
 
 -
-  name: delete client {{ _apb_bind_creds.resource }} in realm {{ namespace }}
+  name: "delete client {{ _apb_bind_creds.resource }} in realm {{ namespace }}"
   uri:
+    when: _apb_bind_creds is defined
     url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ _apb_bind_creds.resource }}"
     method: DELETE
     validate_certs: no
