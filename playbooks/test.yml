@@ -21,4 +21,10 @@
       name: provision-keycloak-apb
   - name: Run the test role.
     include_role:
-      name: test-keycloak-apb
+      name: test-provision-apb
+  - name: Run the deprovision role.
+    include_role:
+      name: deprovision-keycloak-apb
+  - name: Run the deprovision test role.
+    include_role:
+      name: test-deprovision-apb
