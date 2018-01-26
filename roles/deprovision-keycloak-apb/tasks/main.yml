@@ -1,6 +1,6 @@
 - name: delete route
   openshift_v1_route:
-    name: keycloak
+    name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     state: absent
 
@@ -10,7 +10,7 @@
     namespace: '{{ namespace }}'
     state: absent
   with_items:
-  - keycloak
+  - '{{ keycloak_service_name }}'
   - postgres
 
 - name: delete deployment configs
