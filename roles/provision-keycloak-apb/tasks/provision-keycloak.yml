@@ -1,6 +1,6 @@
 - name: create persistent volume claim to copy the SPI provider
   k8s_v1_persistent_volume_claim:
-    name: keycloak-metrics
+    name: '{{ keycloak_pv_claim_name }}'
     state: present
     namespace: '{{ namespace }}'
     access_modes: [ReadWriteMany]
@@ -63,7 +63,7 @@
 
 - name: create keycloak service
   k8s_v1_service:
-    name: keycloak
+    name: '{{ keycloak_service_name }}'
     namespace: '{{ namespace }}'
     annotations:
       # this only works with the custom JAR (SPI impl) https://github.com/aerogear/keycloak-metrics-spi
@@ -82,7 +82,7 @@
 
 - name: create keycloak http route
   openshift_v1_route:
-    name: keycloak
+    name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
@@ -94,7 +94,7 @@
 
 - name: create keycloak https route
   openshift_v1_route:
-    name: keycloak
+    name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
