@@ -10,3 +10,8 @@
   - role: ansibleplaybookbundle.asb-modules
   - role: provision-keycloak-apb
     playbook_debug: false
+  - role: oc-patch-file-to-configmap
+    file: "{{ dashboard_file }}"
+    filename: "{{ dashboard_filename }}"
+    configmap: "{{ dashboards_configmap }}"
+    namespace: "{{ namespace }}"
