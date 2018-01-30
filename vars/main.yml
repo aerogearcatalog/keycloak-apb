@@ -10,7 +10,3 @@ keycloak_route_name: keycloak
 keycloak_secret_name: keycloak
 keycloak_pv_claim_name: keycloak-metrics
 postgres_secret_name: keycloak-postgres
-
-dashboards_configmap: grafana-dashboards-configmap
-dashboard_filename: keycloak-dashboard.json # name the file will have inside the config map
-dashboard_file: "{{ lookup('file','/opt/ansible/files/keycloak-dashboard.json') }}" # Contents of the dashboard file
