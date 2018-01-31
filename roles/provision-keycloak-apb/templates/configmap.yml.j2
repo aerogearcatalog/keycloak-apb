@@ -1,17 +1,15 @@
 apiVersion: v1
-kind: Secret
+kind: ConfigMap
 metadata:
   name: '{{ keycloak_secret_name }}'
   namespace: {{ namespace }}
   labels:
-    name: keycloak
     mobile: enabled
-stringData:
+    serviceName: keycloak
+data:
   type: keycloak
   realm: {{namespace}}
   name: keycloak
-  admin_username: "{{ ADMIN_NAME }}"
-  admin_password: "{{ ADMIN_PASSWORD }}"
   uri: {{ keycloak_protocol }}://{{ keycloak_route.stdout }}
   bearer_client_id: {{ generated_username.stdout }}-bearer
   bearer_client_secret: {{ generated_password.stdout }}

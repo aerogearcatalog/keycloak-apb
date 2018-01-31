@@ -31,6 +31,14 @@
   - keycloak
   - keycloak-postgres
 
+- name: delete config maps
+  k8s_v1_config_map:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak
+
 - name: delete persistent volume claims
   k8s_v1_persistent_volume_claim:
     name: '{{ item }}'
