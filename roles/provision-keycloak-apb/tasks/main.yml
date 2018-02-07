@@ -1,3 +1,5 @@
+- include_tasks: label-serviceinstance.yml
+
 - include_tasks: provision-postgres.yml
 
 - include_tasks: provision-keycloak.yml
