@@ -47,7 +47,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
   "links": [],
   "panels": [
     {
@@ -100,7 +99,7 @@
       "rangeMaps": [
         {
           "from": "null",
-          "text": "N/A",
+          "text": "0",
           "to": "null"
         }
       ],
@@ -271,7 +270,7 @@
       "rangeMaps": [
         {
           "from": "null",
-          "text": "N/A",
+          "text": "0",
           "to": "null"
         }
       ],
@@ -510,7 +509,7 @@
       "lines": true,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "null",
+      "nullPointMode": "connected",
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -526,7 +525,7 @@
           "hide": false,
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "{{provider}}",
+          "legendFormat": "{{error}}",
           "refId": "A"
         }
       ],
@@ -596,7 +595,7 @@
       "lines": true,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "null",
+      "nullPointMode": "connected",
       "percentage": false,
       "pointradius": 5,
       "points": false,
