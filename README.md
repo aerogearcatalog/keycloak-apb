@@ -33,9 +33,9 @@ If changes were made to the `apb.yml` file, then you will need to execute `apb b
 
 In the Openshift control panel, find and select the `Keycloak (APB)` and fill in the required fields.
 
-You can also test new changes by running `apb test`. What this command does in general is described in [metrics-apb readme](https://github.com/aerogearcatalog/metrics-apb#testing)
+You can also test new changes by running `apb test`. What this command does in general is described in [metrics-apb readme](https://github.com/aerogearcatalog/metrics-apb#testing).
 
-For more information about testing of APBs, check [ansible-playbook-bundle documentation](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/blob/master/docs/getting_started.md#test)
+For more information about testing of APBs, check [ansible-playbook-bundle documentation](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/blob/master/docs/getting_started.md#test).
 
 ## Publish
 
