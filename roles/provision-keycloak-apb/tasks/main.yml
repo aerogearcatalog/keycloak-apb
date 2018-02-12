@@ -1,6 +1,10 @@
 - include_tasks: label-serviceinstance.yml
 
 - include_tasks: provision-postgres.yml
+  when: POSTGRESQL_EPHEMERAL is undefined
+
+- include_tasks: provision-postgres-ephemeral.yml
+  when: POSTGRESQL_EPHEMERAL is defined
 
 - include_tasks: provision-keycloak.yml
 
