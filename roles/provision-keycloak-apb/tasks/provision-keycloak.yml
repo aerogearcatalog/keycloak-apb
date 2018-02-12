@@ -166,7 +166,7 @@
   uri:
     url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
-    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\", \"redirectUris\":[\"http://localhost:*\"], \"webOrigins\":[\"http://localhost:8100\"] }"
+    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\", \"redirectUris\":[\"http://localhost:*\"], \"webOrigins\":[\"http://localhost:8100\"], \"publicClient\": true }"
     validate_certs: no
     body_format: json
     headers:
