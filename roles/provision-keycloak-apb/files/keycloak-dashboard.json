@@ -129,7 +129,7 @@
       "valueMaps": [
         {
           "op": "=",
-          "text": "N/A",
+          "text": "0",
           "value": "null"
         }
       ],
@@ -186,7 +186,7 @@
       "rangeMaps": [
         {
           "from": "null",
-          "text": "N/A",
+          "text": "0",
           "to": "null"
         }
       ],
@@ -298,7 +298,7 @@
       "valueMaps": [
         {
           "op": "=",
-          "text": "N/A",
+          "text": "0",
           "value": "null"
         }
       ],
