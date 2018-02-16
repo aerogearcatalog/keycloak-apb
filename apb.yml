@@ -28,6 +28,18 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    - name: SHARED_SERVICE
+      required: False
+      type: bool
+      title: Connect to an existing shared service
+    - name: SHARED_HOST
+      required: False
+      type: string
+      title: URL of the shared service
+    - name: REALM_NAME
+      required: False
+      type: string
+      title: Name of the Keycloak realm (defaults to current namespace)
     bind_parameters:
     - name: service
       title: The service the client is for
