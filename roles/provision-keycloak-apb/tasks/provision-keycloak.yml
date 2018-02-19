@@ -110,15 +110,20 @@
   shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
   register: keycloak_route
 
-- copy:
+- name: "Copy keycloak-metrics-spi jar into temp directory"
+  copy:
     src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
-- shell: oc get pods --namespace {{ namespace }} --selector="deploymentconfig=keycloak" | awk 'NR > 1 {print $1}'
-  register: get_pods
+- name: Get the name of the keycloak pod
+  shell: oc get pods --namespace {{ namespace }} --selector="deploymentconfig=keycloak" | awk 'NR > 1 {print $1}' | grep -v deploy
+  register: keycloak_pod_name
+  retries: 10
+  until: '"keycloak" in keycloak_pod_name.stdout'
+  delay: 5
 
 - name: Copy jar into keycloaks metrics
-  shell: oc cp /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar {{ namespace }}/{{ get_pods.stdout }}:/opt/jboss/keycloak/providers/
+  shell: oc cp /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar {{ namespace }}/{{ keycloak_pod_name.stdout }}:/opt/jboss/keycloak/providers/
   register: copy_jar
   retries: 60
   until: copy_jar.rc == 0
