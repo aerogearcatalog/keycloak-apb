@@ -1,9 +1,9 @@
 ---
 
 - name: Get the created keycloak configmap
-  shell: "oc get configmap -o name | grep keycloak"
+  shell: "oc get configmap -o name | grep {{ keycloak_configmap_name }}"
   register: kc_configmap
-  failed_when: '"keycloak" not in kc_configmap.stdout'
+  failed_when: keycloak_configmap_name not in kc_configmap.stdout
 
 - name: Get Keycloak URI from configmap
   shell: "oc get {{ kc_configmap.stdout }} -o jsonpath='{.data.uri}'"
@@ -40,6 +40,6 @@
   until: '"jvm_memory_bytes_used" in webpage.content'
 
 - name: Check that keycloak secret exists
-  shell: "oc get secrets -o name | grep keycloak"
+  shell: "oc get secrets -o name | grep {{ keycloak_secret_name }}"
   register: kc_secret
-  failed_when: '"keycloak" not in kc_secret.stdout'
+  failed_when: keycloak_secret_name not in kc_secret.stdout

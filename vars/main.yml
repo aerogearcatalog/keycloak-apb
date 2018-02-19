@@ -7,6 +7,7 @@ keycloak_protocol: https
 keycloak_service_name: keycloak
 postgres_service_name: postgres
 keycloak_route_name: keycloak
+keycloak_configmap_name: keycloak
 keycloak_secret_name: keycloak
 keycloak_pv_claim_name: keycloak-metrics
 postgres_secret_name: keycloak-postgres
