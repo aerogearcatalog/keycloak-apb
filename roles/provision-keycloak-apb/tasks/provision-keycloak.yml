@@ -229,7 +229,7 @@
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
 - k8s_v1_secret:
-    name: keycloak
+    name: '{{ keycloak_secret_name }}'
     namespace: '{{ namespace }}'
     labels:
       name: keycloak
