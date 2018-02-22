@@ -42,6 +42,7 @@ plans:
       title: Name of the Keycloak realm (defaults to current namespace)
     bind_parameters:
     - name: service
+      required: True
       title: The service the client is for
       type: string
     - name: REALM_NAME

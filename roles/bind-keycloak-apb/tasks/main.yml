@@ -22,8 +22,7 @@
   retries: 600
   delay: 2
 
-# ## Check if specified realm exists. Create if it doesn't exist and skip if it exists
-- name: Get realms
+- name: Get Keycloak Realms
   uri: 
     url: "{{ keycloak_route.stdout }}/auth/admin/realms/"
     method: GET
@@ -35,9 +34,7 @@
     return_content: yes
   register: keycloak_realms
 
-- set_fact: kc_json_realms={{keycloak_realms.content | from_json }}
-
-- set_fact: kc_realms={{ kc_json_realms | map(attribute='realm') | list}}
+- set_fact: kc_realms={{ keycloak_realms.content | from_json | map(attribute='realm') | list}}
 
 - set_fact: realm={{ namespace }}
   when: REALM_NAME is not defined
@@ -45,10 +42,11 @@
 - set_fact: realm={{ REALM_NAME }}
   when: REALM_NAME is defined
 
-- name: Generate namespace specific realm
+- name: Generate Keycloak Realm Template
   template:
     src: realm.json.j2
     dest: /tmp/realm.json
+  when: "realm not in kc_realms"
 
 - name: "Create {{ realm }} realm"
   uri:
@@ -62,9 +60,9 @@
     status_code: 201
   when: "realm not in kc_realms"
 
-- name: "Create {{ service }}-bearer client in realm {{ namespace }}"
+- name: "Create {{ service }}-bearer client in {{ realm }} realm"
   uri:
-    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients"
     method: POST
     body: "{\"id\": \"{{ service }}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
     validate_certs: no
@@ -76,7 +74,7 @@
 
 - name: Get installation details bearer
   uri:
-    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ service}}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients/{{ service }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
