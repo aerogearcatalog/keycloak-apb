@@ -7,7 +7,7 @@
   register: generated_password
 
 - name: "Retrieve route to keycloak"
-  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath='{.data.uri}'" ## Unexpected . on template template error while templating string: unexpected '.'
+  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath='{.data.uri}'"
   register: keycloak_route
 - debug: msg="kc route = {{keycloak_route.stdout}}"
 
