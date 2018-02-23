@@ -1,9 +1,9 @@
 {
-  "id": "{{ namespace }}",
-  "realm": "{{ namespace }}",
+  "id": "{{ KEYCLOAK_REALM }}",
+  "realm": "{{ KEYCLOAK_REALM }}",
   "enabled": true,
   "eventsEnabled": true,
   "eventsExpiration": 7200,
-  "displayName": "{{ namespace }}",
+  "displayName": "{{ KEYCLOAK_REALM }}",
   "eventsListeners": ["jboss-logging", "metrics-listener"]
 }

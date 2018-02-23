@@ -36,7 +36,7 @@ plans:
       required: False
       type: string
       title: URL of the shared service
-    - name: REALM_NAME
+    - name: SHARED_REALM
       required: False
       type: string
       title: Name of the Keycloak realm (defaults to current namespace)
