@@ -1,0 +1,16 @@
+---
+- name: delete keycloak secrets
+  k8s_v1_secret:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak
+
+- name: delete config maps
+  k8s_v1_config_map:
+    name: '{{ item }}'
+    namespace: '{{ namespace }}'
+    state: absent
+  with_items:
+  - keycloak
