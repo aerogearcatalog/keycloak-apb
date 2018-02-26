@@ -1,23 +1,27 @@
 - include_tasks: label-serviceinstance.yml
 
 - include_tasks: provision-postgres.yml
-  when: POSTGRESQL_EPHEMERAL is undefined or
-        not POSTGRESQL_EPHEMERAL
+  when:
+    - POSTGRESQL_EPHEMERAL is undefined or
+      not POSTGRESQL_EPHEMERAL
+    - not USE_SHARED_SERVICE
 
 - include_tasks: provision-postgres-ephemeral.yml
-  when: POSTGRESQL_EPHEMERAL is defined or
-        POSTGRESQL_EPHEMERAL
+  when:
+    - POSTGRESQL_EPHEMERAL is defined or
+      POSTGRESQL_EPHEMERAL
+    - not USE_SHARED_SERVICE
 
 - include_tasks: provision-keycloak.yml
-  when: SHARED_SERVICE is not defined or
-        not SHARED_SERVICE
+  when: USE_SHARED_SERVICE is undefined or
+        not USE_SHARED_SERVICE
 
 - include_tasks: configure-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{keycloak_protocol}}://{{keycloak_route.stdout}}"
     KEYCLOAK_REALM: "{{ namespace }}"
-  when: SHARED_HOST is not defined or
-        not SHARED_SERVICE
+  when: SHARED_HOST is undefined or
+        not USE_SHARED_SERVICE
 
 - include_tasks: configure-keycloak.yml
   vars:
@@ -26,6 +30,7 @@
   when:
     - SHARED_HOST is defined
     - SHARED_REALM is defined
+    - USE_SHARED_SERVICE
 
 - include_role:
     name: oc-patch-file-to-configmap

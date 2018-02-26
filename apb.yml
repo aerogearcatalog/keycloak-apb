@@ -28,7 +28,7 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
-    - name: SHARED_SERVICE
+    - name: USE_SHARED_SERVICE
       required: False
       type: bool
       title: Connect to an existing shared service
