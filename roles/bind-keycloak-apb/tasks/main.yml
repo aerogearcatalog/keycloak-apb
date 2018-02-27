@@ -1,15 +1,15 @@
-- name: Generate Username
-  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
-  register: generated_username
-
-- name: Generate Password
+- name: Generate client id
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
-  register: generated_password
+  register: generated_client_id
+- set_fact: client_id={{ generated_client_id.stdout }}
+
+- name: Generate client secret
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: generated_secret
 
 - name: "Retrieve route to keycloak"
   shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath='{.data.uri}'"
   register: keycloak_route
-- debug: msg="kc route = {{keycloak_route.stdout}}"
 
 - name: "Generate keycloak auth token"
   uri:
@@ -64,17 +64,21 @@
   uri:
     url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients"
     method: POST
-    body: "{\"id\": \"{{ service }}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
+    body: "{\"id\": \"{{ client_id }}\", \"clientId\": \"{{ service }}-bearer\", \"name\": \"{{ service }}\", \"secret\": \"{{ generated_secret.stdout }}\",\"bearerOnly\":true}"
     validate_certs: no
     body_format: json
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201, 409
+  register: create_client
 
+- name: Check for client bearer conflict
+  fail: msg="{{ service }}-bearer client already exists on the {{ realm }} realm"
+  failed_when: create_client.status == 409
 
-- name: Get installation details bearer
+- name: Get installation details bearer 
   uri:
-    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients/{{ service }}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients/{{ client_id }}/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
@@ -86,9 +90,9 @@
 - name: encode {{ service }} credentials
   asb_encode_binding:
     fields:
-      name: "keycloak-bearer"
+      name: "{{ service }}"
       resource: "{{ service }}-bearer"
       bearer_installation: "{{ installation_bearer.content }}"
       uri: "{{ keycloak_route.stdout }}"
-      client_id: "{{ generated_username.stdout }}"
-      client_secret: "{{ generated_password.stdout }}"
+      client_id: "{{ client_id }}"
+      client_secret: "{{ generated_secret.stdout }}"
