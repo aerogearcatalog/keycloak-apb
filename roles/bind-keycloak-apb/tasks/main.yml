@@ -60,11 +60,16 @@
     status_code: 201
   when: "realm not in kc_realms"
 
+- name: Generate Keycloak Realm Template
+  template:
+    src: client_bearer.json.j2
+    dest: /tmp/client_bearer.json
+
 - name: "Create {{ service }}-bearer client in {{ realm }} realm"
   uri:
     url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ realm }}/clients"
     method: POST
-    body: "{\"id\": \"{{ client_id }}\", \"clientId\": \"{{ service }}-bearer\", \"name\": \"{{ service }}\", \"secret\": \"{{ generated_secret.stdout }}\",\"bearerOnly\":true}"
+    body: "{{ lookup('file','/tmp/client_bearer.json') }}"
     validate_certs: no
     body_format: json
     headers:
