@@ -1,12 +1,10 @@
-- 
-  name: "Retrieve route to keycloak"
-  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
+- name: "Retrieve route to keycloak"
+  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath='{.data.uri}'"
   register: keycloak_route
-- debug: msg="kc route = {{keycloak_route}}"
 
 - name: "Generate keycloak auth token"
   uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
     body: "client_id=admin-cli&username={{ _apb_provision_creds.ADMIN_NAME }}&password={{
       _apb_provision_creds.ADMIN_PASSWORD }}&grant_type=password"
@@ -20,10 +18,11 @@
     var: keycloak_auth_response
     verbosity: 2
 
--
-  name: delete client {{ _apb_bind_creds.resource }} in realm {{ namespace }}
+- set_fact: KEYCLOAK_REALM={{ _apb_bind_creds.bearer_installation.realm}}
+
+- name: delete client {{ _apb_bind_creds.resource }} in realm {{ KEYCLOAK_REALM }}
   uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ _apb_bind_creds.resource }}"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
     method: DELETE
     validate_certs: no
     headers:
