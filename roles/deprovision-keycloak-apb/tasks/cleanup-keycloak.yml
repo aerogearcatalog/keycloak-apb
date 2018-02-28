@@ -14,19 +14,20 @@
   shell: "{{ kc_namespace_configmap }} -o jsonpath={.data.public_client_id}"
   register: kc_configmap_user
 
-- name: "Generate KeyCloak auth token"
+- name: Generate KeyCloak auth token
   uri:
     url: "{{ kc_configmap_uri.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
     body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
-  register: keycloak_auth_response
-  until: keycloak_auth_response.status == 200
+  register: kc_auth_response
   retries: 20
   delay: 2
+  until: kc_auth_response.status == 200
+  ignore_errors: yes
 
 - debug:
-    var: keycloak_auth_response
+    var: kc_auth_response
     verbosity: 2
 
 - name: Delete client {{ kc_configmap_user.stdout }} in realm {{ kc_configmap_realm.stdout }}
@@ -35,9 +36,10 @@
     method: DELETE
     validate_certs: no
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
+  when: kc_auth_response.status == 200
   with_items:
     - "{{ kc_configmap_user.stdout }}"
     - "{{ kc_configmap_user.stdout }}-bearer"

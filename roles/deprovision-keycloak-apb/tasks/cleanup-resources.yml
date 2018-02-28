@@ -1,5 +1,5 @@
 ---
-- name: delete keycloak secrets
+- name: Delete keycloak secrets
   k8s_v1_secret:
     name: '{{ item }}'
     namespace: '{{ namespace }}'
@@ -7,7 +7,7 @@
   with_items:
   - keycloak
 
-- name: delete config maps
+- name: Delete config maps
   k8s_v1_config_map:
     name: '{{ item }}'
     namespace: '{{ namespace }}'
