@@ -23,7 +23,8 @@
   register: kc_auth_response
   retries: 20
   delay: 2
-  until: kc_auth_response.status == 200
+  until: kc_auth_response.status == 503 or
+         kc_auth_response.status in [200, 401, 403]
   ignore_errors: yes
 
 - debug:
@@ -39,7 +40,7 @@
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
-  when: kc_auth_response.status == 200
+  when: kc_auth_response.status != 503
   with_items:
     - "{{ kc_configmap_user.stdout }}"
     - "{{ kc_configmap_user.stdout }}-bearer"
