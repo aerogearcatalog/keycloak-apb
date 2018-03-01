@@ -23,7 +23,7 @@
 
 - include_tasks: configure-keycloak.yml
   vars:
-    KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory }}"
+    KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
     KEYCLOAK_REALM: "{{ (CUSTOM_REALM_NAME is defined) | ternary(CUSTOM_REALM_NAME, namespace) }}"
   when:
     - USE_SHARED_SERVICE
