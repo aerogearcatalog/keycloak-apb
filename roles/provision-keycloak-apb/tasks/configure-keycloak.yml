@@ -10,7 +10,7 @@
   retries: 600
   delay: 2
 
-- name: Generate namespace specific realm
+- name: Generate {{ KEYCLOAK_REALM }} specific realm
   template:
     src: keycloak_realm.json.j2
     dest: /tmp/keycloak_realm.json

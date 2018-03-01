@@ -28,6 +28,10 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    - name: CUSTOM_REALM_NAME
+      required: False
+      type: string
+      title: Name of the Keycloak realm (defaults to current namespace)
     - name: USE_SHARED_SERVICE
       required: False
       type: bool
@@ -36,10 +40,6 @@ plans:
       required: False
       type: string
       title: URL of the shared service
-    - name: SHARED_REALM
-      required: False
-      type: string
-      title: Name of the Keycloak realm (defaults to current namespace)
     bind_parameters:
     - name: service
       required: True
