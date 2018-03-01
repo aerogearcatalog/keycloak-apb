@@ -13,24 +13,21 @@
     - not USE_SHARED_SERVICE
 
 - include_tasks: provision-keycloak.yml
-  when: USE_SHARED_SERVICE is undefined or
-        not USE_SHARED_SERVICE
+  when: not USE_SHARED_SERVICE
 
 - include_tasks: configure-keycloak.yml
   vars:
-    KEYCLOAK_HOST: "{{keycloak_protocol}}://{{keycloak_route.stdout}}"
-    KEYCLOAK_REALM: "{{ namespace }}"
-  when: SHARED_HOST is undefined or
-        not USE_SHARED_SERVICE
+    KEYCLOAK_HOST: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
+    KEYCLOAK_REALM: "{{ (CUSTOM_REALM_NAME is defined) | ternary(CUSTOM_REALM_NAME, namespace) }}"
+  when: not USE_SHARED_SERVICE
 
 - include_tasks: configure-keycloak.yml
   vars:
-    KEYCLOAK_HOST: "{{ SHARED_HOST }}"
-    KEYCLOAK_REALM: "{{ SHARED_REALM }}"
+    KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory }}"
+    KEYCLOAK_REALM: "{{ (CUSTOM_REALM_NAME is defined) | ternary(CUSTOM_REALM_NAME, namespace) }}"
   when:
-    - SHARED_HOST is defined
-    - SHARED_REALM is defined
     - USE_SHARED_SERVICE
+    - SHARED_HOST is defined
 
 - include_role:
     name: oc-patch-file-to-configmap
