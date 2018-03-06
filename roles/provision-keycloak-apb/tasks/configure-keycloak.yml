@@ -1,4 +1,12 @@
 ---
+- name: Generate Username
+  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
+  register: generated_username
+
+- name: Generate Password
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: generated_password
+
 - name: "Generate keycloak auth token"
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/master/protocol/openid-connect/token"
@@ -39,19 +47,11 @@
     status_code: 201
   when: keycloak_realm_exists.status == 404
 
-- name: Generate Username
-  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
-  register: generated_username
-
-- name: Generate Password
-  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
-  register: generated_password
-
 - name: "Create {{ generated_username.stdout }} client in realm {{ KEYCLOAK_REALM }}"
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: POST
-    body: "{\"id\": \"{{ generated_username.stdout }}\", \"secret\": \"{{ generated_password.stdout }}\", \"redirectUris\":[\"http://localhost:*\"], \"webOrigins\":[\"http://localhost:8100\"], \"publicClient\": true }"
+    body: '{"id": "{{ generated_username.stdout }}", "secret": "{{ generated_password.stdout }}", "redirectUris":["http://localhost:*"], "webOrigins":["http://localhost:8100"], "publicClient": true }'
     validate_certs: no
     body_format: json
     headers:
@@ -62,7 +62,7 @@
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: POST
-    body: "{\"id\": \"{{ generated_username.stdout }}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
+    body: '{"id": "{{ generated_username.stdout }}-bearer", "secret": "{{ generated_password.stdout }}","bearerOnly":true}'
     validate_certs: no
     body_format: json
     headers:
@@ -105,17 +105,6 @@
 - set_fact: installation="{{ installation_text.stdout | from_json }}"
 - set_fact: installationbearer="{{ installation_bearer.content | from_json }}"
 
-- k8s_v1_secret:
-    name: '{{ keycloak_secret_name }}'
-    namespace: '{{ namespace }}'
-    labels:
-      name: keycloak
-      mobile: enabled
-      serviceName: keycloak
-    string_data:
-      admin_username: '{{ ADMIN_NAME }}'
-      admin_password: '{{ ADMIN_PASSWORD }}'
-
 - name: Create keycloak bearer client template
   template:
     src: configmap.yml.j2
@@ -126,9 +115,3 @@
 
 - name: delete configmap template file
   file: path=/tmp/configmap.yaml state=absent
-
-- name: encode admin user credentials
-  asb_encode_binding:
-    fields:
-      ADMIN_NAME: "{{ ADMIN_NAME }}"
-      ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
