@@ -38,7 +38,7 @@
     resources_requests:
       storage: "1Gi"
 
-- openshift_v1_deployment_config:
+- k8s_extensions_v1beta1_deployment:
     name: '{{ postgres_service_name }}'
     namespace: '{{ namespace }}'
     replicas: 1
@@ -47,8 +47,6 @@
       service: '{{ postgres_service_name }}'
     spec_template_metadata_labels:
       app: keycloak
-      name: '{{ postgres_service_name }}'
-    selector:
       name: '{{ postgres_service_name }}'
     containers:
     - name: postgresql

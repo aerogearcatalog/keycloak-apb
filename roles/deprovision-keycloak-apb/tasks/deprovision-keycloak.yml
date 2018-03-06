@@ -14,8 +14,8 @@
   - '{{ keycloak_service_name }}'
   - postgres
 
-- name: Delete deployment configs
-  openshift_v1_deployment_config:
+- name: Delete k8s deployment
+  k8s_extensions_v1beta1_deployment:
     name: '{{ item }}'
     namespace: '{{ namespace }}'
     state: absent

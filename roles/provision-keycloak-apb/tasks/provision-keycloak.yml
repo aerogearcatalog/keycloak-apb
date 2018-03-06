@@ -8,8 +8,8 @@
       storage: 10M
   register: create_volume_claim
 
-- name: create deployment config
-  openshift_v1_deployment_config:
+- name: create keycloak k8s deployment
+  k8s_extensions_v1beta1_deployment:
     name: keycloak
     namespace: '{{ namespace }}'
     labels:
@@ -18,9 +18,6 @@
       name: keycloak
       mobile: enabled
     replicas: 1
-    selector:
-      app: keycloak
-      service: keycloak
     spec_template_metadata_labels:
       app: keycloak
       service: keycloak
