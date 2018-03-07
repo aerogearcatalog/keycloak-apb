@@ -3,7 +3,7 @@
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
   register: kcdev_password
 
-- name: "Generate keycloak {{ ADMIN_NAME }} auth token"
+- name: Generate keycloak {{ ADMIN_NAME }} auth token
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
@@ -19,7 +19,7 @@
     KCDEV_PASSWORD: '{{ kcdev_password.stdout }}'
 # TODO for now username is same as namespace, we need to change it with openshift user and use SSO
 
-- name: "Create {{ KCDEV_USERNAME }} user in {{ KEYCLOAK_REALM }} realm"
+- name: Create {{ KCDEV_USERNAME }} user in {{ KEYCLOAK_REALM }} realm
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/users"
     method: POST
@@ -31,7 +31,7 @@
     status_code: 201
   register: kcdev_user_created
 
-- name: "Change {{ KCDEV_USERNAME }} password in {{ KEYCLOAK_REALM }} realm"
+- name: Change {{ KCDEV_USERNAME }} password in {{ KEYCLOAK_REALM }} realm
   uri:
     url: "{{ kcdev_user_created.location }}/reset-password"
     method: PUT
@@ -42,7 +42,7 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
 
-- name: "Get all available client in {{ KEYCLOAK_REALM }} realm"
+- name: Get all available client in {{ KEYCLOAK_REALM }} realm
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: GET
@@ -57,7 +57,7 @@
     kcdev_realm_mgmt_client: "{{ kcdev_realm_clients.json | json_query(kcdev_realm_mgmt_jq) | first}}"
     KCDEV_USERID: "{{ kcdev_user_created.location.split('/')[-1] }}"
 
-- name: "Get all available roles of {{ kcdev_realm_mgmt_client.name }} client"
+- name: Get all available roles of {{ kcdev_realm_mgmt_client.name }} client
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ kcdev_realm_mgmt_client.id }}/roles"
     method: GET
@@ -68,7 +68,7 @@
     status_code: 200
   register: kcdev_realm_mgmt_roles
 
-- name: "Add {{ kcdev_realm_mgmt_client.id }} roles to {{ KCDEV_USERNAME }} user"
+- name: Add {{ kcdev_realm_mgmt_client.id }} roles to {{ KCDEV_USERNAME }} user
   uri:
     url: "{{ kcdev_user_created.location }}/role-mappings/clients/{{ kcdev_realm_mgmt_client.id }}"
     method: POST
@@ -79,7 +79,7 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
 
-- name: "Generate keycloak {{ KCDEV_USERNAME }} auth token"
+- name: Generate keycloak {{ KCDEV_USERNAME }} auth token
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ KEYCLOAK_REALM }}/protocol/openid-connect/token"
     method: POST
@@ -90,7 +90,7 @@
   retries: 600
   delay: 2
 
-- name: "Get keycloak whoami {{ KCDEV_USERNAME }}"
+- name: Get keycloak whoami {{ KCDEV_USERNAME }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/{{ KEYCLOAK_REALM }}/console/whoami"
     method: GET

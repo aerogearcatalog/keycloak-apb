@@ -1,31 +1,35 @@
-- name: "Retrieve route to keycloak"
-  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath='{.data.uri}'"
-  register: keycloak_route
+- name: Retrieve route to keycloak
+  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath={.data.uri}"
+  register: keycloak_uri
 
-- name: "Generate keycloak auth token"
+- set_fact:
+    KEYCLOAK_REALM: "{{ _apb_bind_creds.bearer_installation.realm }}"
+    KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
+
+- name: Generate keycloak auth token
   uri:
-    url: "{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ KEYCLOAK_URI }}/auth/realms/{{ KEYCLOAK_REALM }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ _apb_provision_creds.ADMIN_NAME }}&password={{
-      _apb_provision_creds.ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ _apb_provision_creds.KCDEV_USERNAME }}&password={{ _apb_provision_creds.KCDEV_PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
-  until: keycloak_auth_response.status == 200
   retries: 20
   delay: 2
+  until: keycloak_auth_response.status == 503 or
+         keycloak_auth_response.status in [200, 401, 403]
+  ignore_errors: yes
 
 - debug:
     var: keycloak_auth_response
     verbosity: 2
 
-- set_fact: KEYCLOAK_REALM={{ _apb_bind_creds.bearer_installation.realm}}
-
-- name: delete client {{ _apb_bind_creds.resource }} in realm {{ KEYCLOAK_REALM }}
+- name: Delete client {{ _apb_bind_creds.resource }} in realm {{ KEYCLOAK_REALM }}
   uri:
-    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
     method: DELETE
     validate_certs: no
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
+  when: keycloak_auth_response.status != 503
