@@ -1,0 +1,122 @@
+---
+- name: Generate KC development password
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: kcdev_password
+
+- name: Generate keycloak {{ ADMIN_NAME }} auth token
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/realms/master/protocol/openid-connect/token"
+    method: POST
+    body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    validate_certs: no
+  register: keycloak_auth_response
+  until: keycloak_auth_response.status == 200
+  retries: 600
+  delay: 2
+
+- set_fact:
+    KCDEV_USERNAME: '{{ namespace }}'
+    KCDEV_PASSWORD: '{{ kcdev_password.stdout }}'
+# TODO for now username is same as namespace, we need to change it with openshift user and use SSO
+
+- name: Create {{ KCDEV_USERNAME }} user in {{ KEYCLOAK_REALM }} realm
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/users"
+    method: POST
+    body: '{"enabled":true,"attributes":{},"username":"{{ KCDEV_USERNAME }}","emailVerified":"","email":"","firstName":"","lastName":""}'
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 201
+  register: kcdev_user_created
+
+- name: Change {{ KCDEV_USERNAME }} password in {{ KEYCLOAK_REALM }} realm
+  uri:
+    url: "{{ kcdev_user_created.location }}/reset-password"
+    method: PUT
+    body: '{"type":"password","value":"{{ KCDEV_PASSWORD }}","temporary":false}'
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 204
+
+- name: Get all available client in {{ KEYCLOAK_REALM }} realm
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
+    method: GET
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+  register: kcdev_realm_clients
+
+- set_fact:
+    kcdev_realm_mgmt_client: "{{ kcdev_realm_clients.json | json_query(kcdev_realm_mgmt_jq) | first}}"
+    KCDEV_USERID: "{{ kcdev_user_created.location.split('/')[-1] }}"
+
+- name: Get all available roles of {{ kcdev_realm_mgmt_client.name }} client
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ kcdev_realm_mgmt_client.id }}/roles"
+    method: GET
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 200
+  register: kcdev_realm_mgmt_roles
+
+- name: Add {{ kcdev_realm_mgmt_client.id }} roles to {{ KCDEV_USERNAME }} user
+  uri:
+    url: "{{ kcdev_user_created.location }}/role-mappings/clients/{{ kcdev_realm_mgmt_client.id }}"
+    method: POST
+    body: '{{ kcdev_realm_mgmt_roles.json }}'
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 204
+
+- name: Generate keycloak {{ KCDEV_USERNAME }} auth token
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ KEYCLOAK_REALM }}/protocol/openid-connect/token"
+    method: POST
+    body: "client_id=admin-cli&username={{ KCDEV_USERNAME }}&password={{ KCDEV_PASSWORD }}&grant_type=password"
+    validate_certs: no
+  register: kcdev_realm_user_response
+  until: kcdev_realm_user_response.status == 200
+  retries: 600
+  delay: 2
+
+- name: Get keycloak whoami {{ KCDEV_USERNAME }}
+  uri:
+    url: "{{ KEYCLOAK_HOST }}/auth/admin/{{ KEYCLOAK_REALM }}/console/whoami"
+    method: GET
+    validate_certs: no
+    body_format: json
+    headers:
+      Authorization: "bearer {{ kcdev_realm_user_response.json.access_token }}"
+    status_code: 200
+  register: kcdev_realm_user_whoami
+  failed_when: kcdev_realm_user_whoami.json.userId != KCDEV_USERID
+
+- name: Encode {{ KCDEV_USERNAME }} user credentials
+  asb_encode_binding:
+    fields:
+      KCDEV_USERID: "{{ KCDEV_USERID }}"
+      KCDEV_USERNAME: "{{ KCDEV_USERNAME }}"
+      KCDEV_PASSWORD: "{{ KCDEV_PASSWORD }}"
+
+- k8s_v1_secret:
+    name: '{{ keycloak_secret_name }}'
+    namespace: '{{ namespace }}'
+    labels:
+      name: keycloak
+      mobile: enabled
+      serviceName: keycloak
+    string_data:
+      kcdev_user_id: '{{ KCDEV_USERID }}'
+      kcdev_user_name: '{{ KCDEV_USERNAME }}'
+      kcdev_password: '{{ KCDEV_PASSWORD }}'

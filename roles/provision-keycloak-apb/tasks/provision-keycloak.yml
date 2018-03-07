@@ -128,3 +128,20 @@
   retries: 60
   until: copy_jar.rc == 0
   delay: 5
+
+- name: Encode admin user credentials
+  asb_encode_binding:
+    fields:
+      ADMIN_NAME: "{{ ADMIN_NAME }}"
+      ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
+
+- k8s_v1_secret:
+    name: '{{ keycloak_secret_name }}'
+    namespace: '{{ namespace }}'
+    labels:
+      name: keycloak
+      mobile: enabled
+      serviceName: keycloak
+    string_data:
+      admin_username: '{{ ADMIN_NAME }}'
+      admin_password: '{{ ADMIN_PASSWORD }}'

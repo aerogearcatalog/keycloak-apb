@@ -21,7 +21,9 @@
     KEYCLOAK_REALM: "{{ (CUSTOM_REALM_NAME is defined) | ternary(CUSTOM_REALM_NAME, namespace) }}"
   when: not USE_SHARED_SERVICE
 
-- include_tasks: configure-keycloak.yml
+- block:
+  - include_tasks: configure-keycloak.yml
+  - include_tasks: addrealmuser-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
     KEYCLOAK_REALM: "{{ (CUSTOM_REALM_NAME is defined) | ternary(CUSTOM_REALM_NAME, namespace) }}"

@@ -11,3 +11,4 @@ postgres_database_name: keycloak
 dashboards_configmap: grafana-dashboards-configmap
 dashboard_filename: keycloak-dashboard.json # name the file will have inside the config map
 dashboard_file_contents: "{{ lookup('file','../files/keycloak-dashboard.json') }}" # Contents of the dashboard file
+kcdev_realm_mgmt_jq: "[?clientId=='realm-management'].{name: clientId, id: id}"
