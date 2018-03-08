@@ -9,9 +9,9 @@
 
 - name: "Generate keycloak auth token"
   uri:
-    url: "{{ KEYCLOAK_HOST }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ ADMIN_USERNAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200
@@ -35,7 +35,7 @@
     return_content: yes
   register: keycloak_realm_exists
 
-- name: "Create {{ KEYCLOAK_REALM }} realm only when not exists"
+- name: Create {{ KEYCLOAK_REALM }} realm only when not exists
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms"
     method: POST
@@ -47,7 +47,7 @@
     status_code: 201
   when: keycloak_realm_exists.status == 404
 
-- name: "Create {{ generated_username.stdout }} client in realm {{ KEYCLOAK_REALM }}"
+- name: Create {{ generated_username.stdout }} client in realm {{ KEYCLOAK_REALM }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: POST
@@ -58,7 +58,7 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
 
-- name: "Create {{ generated_username.stdout }}-bearer client in realm {{ KEYCLOAK_REALM }}"
+- name: Create {{ generated_username.stdout }}-bearer client in realm {{ KEYCLOAK_REALM }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: POST
