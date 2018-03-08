@@ -31,7 +31,7 @@
     containers:
     - env:
       - name: KEYCLOAK_USER
-        value: '{{ ADMIN_NAME }}'
+        value: '{{ ADMIN_USERNAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
       - name: PROXY_ADDRESS_FORWARDING
@@ -132,8 +132,9 @@
 - name: Encode admin user credentials
   asb_encode_binding:
     fields:
-      ADMIN_NAME: "{{ ADMIN_NAME }}"
-      ADMIN_PASSWORD: "{{ ADMIN_PASSWORD }}"
+      USERNAME: "{{ ADMIN_USERNAME }}"
+      PASSWORD: "{{ ADMIN_PASSWORD }}"
+      IS_SHARED: "{{ USE_SHARED_SERVICE }}"
 
 - k8s_v1_secret:
     name: '{{ keycloak_secret_name }}'
@@ -143,5 +144,6 @@
       mobile: enabled
       serviceName: keycloak
     string_data:
-      admin_username: '{{ ADMIN_NAME }}'
-      admin_password: '{{ ADMIN_PASSWORD }}'
+      user_id: '{{ ADMIN_USERNAME }}'
+      user_name: '{{ ADMIN_USERNAME }}'
+      user_passwd: '{{ ADMIN_PASSWORD }}'

@@ -16,11 +16,25 @@
   shell: "{{ kc_namespace_configmap }} -o jsonpath={.data.public_client_id}"
   register: kc_configmap_user
 
+###
+- name: Get the user id
+  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userId} | base64 --decode"
+  register: kcdev_userid
+
+- name: Get the username
+  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userName} | base64 --decode"
+  register: kcdev_username
+
+- name: Get the password
+  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userPasswd} | base64 --decode"
+  register: kcdev_password
+# TODO when openshift/ansible-service-broker#818 we should get secrets from _apb_provision_creds
+
 - name: Generate KeyCloak auth token
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ kc_configmap_uri.stdout }}/auth/realms/{{ kc_configmap_realm.stdout }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ kcdev_username.stdout }}&password={{ kcdev_password.stdout }}&grant_type=password"
     validate_certs: no
   register: kc_auth_response
   retries: 20
@@ -46,14 +60,6 @@
   with_items:
     - "{{ kc_configmap_user.stdout }}"
     - "{{ kc_configmap_user.stdout }}-bearer"
-
-- name: Get the user id
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.kcdevUserId} | base64 --decode"
-  register: kcdev_userid
-
-- name: Get the username
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.kcdevUserName} | base64 --decode"
-  register: kcdev_username
 
 - name: Delete {{ kcdev_username.stdout }} user in realm {{ kc_configmap_realm.stdout }}
   uri:
