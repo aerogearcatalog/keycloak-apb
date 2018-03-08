@@ -48,12 +48,13 @@
     - "{{ kc_configmap_user.stdout }}-bearer"
 
 - name: Get the user id
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.kcdevUserId} | base64 --decode"
+  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userId} | base64 --decode"
   register: kcdev_userid
 
 - name: Get the username
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.kcdevUserName} | base64 --decode"
+  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userName} | base64 --decode"
   register: kcdev_username
+# TODO when openshift/ansible-service-broker#818 we should get secrets from _apb_provision_creds
 
 - name: Delete {{ kcdev_username.stdout }} user in realm {{ kc_configmap_realm.stdout }}
   uri:

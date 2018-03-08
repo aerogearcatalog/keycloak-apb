@@ -3,11 +3,11 @@
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
   register: kcdev_password
 
-- name: Generate keycloak {{ ADMIN_NAME }} auth token
+- name: Generate keycloak {{ ADMIN_USERNAME }} auth token
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ ADMIN_NAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ ADMIN_USERNAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200
@@ -105,9 +105,9 @@
 - name: Encode {{ KCDEV_USERNAME }} user credentials
   asb_encode_binding:
     fields:
-      KCDEV_USERID: "{{ KCDEV_USERID }}"
-      KCDEV_USERNAME: "{{ KCDEV_USERNAME }}"
-      KCDEV_PASSWORD: "{{ KCDEV_PASSWORD }}"
+      USERID: "{{ KCDEV_USERID }}"
+      USERNAME: "{{ KCDEV_USERNAME }}"
+      PASSWORD: "{{ KCDEV_PASSWORD }}"
 
 - k8s_v1_secret:
     name: '{{ keycloak_secret_name }}'
@@ -117,6 +117,6 @@
       mobile: enabled
       serviceName: keycloak
     string_data:
-      kcdev_user_id: '{{ KCDEV_USERID }}'
-      kcdev_user_name: '{{ KCDEV_USERNAME }}'
-      kcdev_password: '{{ KCDEV_PASSWORD }}'
+      user_id: '{{ KCDEV_USERID }}'
+      user_name: '{{ KCDEV_USERNAME }}'
+      user_passwd: '{{ KCDEV_PASSWORD }}'

@@ -10,7 +10,7 @@
   uri:
     url: "{{ KEYCLOAK_URI }}/auth/realms/{{ KEYCLOAK_REALM }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ _apb_provision_creds.KCDEV_USERNAME }}&password={{ _apb_provision_creds.KCDEV_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ _apb_provision_creds.USERNAME }}&password={{ _apb_provision_creds.PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
   retries: 20
