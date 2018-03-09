@@ -47,6 +47,14 @@
     var: kc_auth_response
     verbosity: 2
 
+- name: Fail due to invalid credentials
+  fail: msg="Failed to get access token due to invalid credentials"
+  when: kc_auth_response.status == 401
+
+- name: Fail due to lack of authorization
+  fail: msg="Failed to get access token. The user {{ kcdev_username.stdout }} is unauthorized to perform this action"
+  when: kc_auth_response.status == 403
+
 - name: Get {{ kc_configmap_user.stdout }} and {{ kc_configmap_user.stdout }}-bearer clients in realm {{ kc_configmap_realm.stdout }}
   uri:
     url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/clients/{{ item }}"
@@ -56,7 +64,7 @@
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 200, 404
     return_content: yes
-  when: kc_auth_response.status != 503
+  when: kc_auth_response.status == 200
   register: kc_clients_get_response
   with_items:
     - "{{ kc_configmap_user.stdout }}"
@@ -71,7 +79,7 @@
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
-  when: kc_auth_response.status != 503 and item.status == 200
+  when: kc_auth_response.status == 200 and item.status == 200
   with_items:
     - "{{ kc_clients_get_response.results }}"
 
@@ -84,7 +92,7 @@
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 200, 404
     return_content: yes
-  when: kc_auth_response.status != 503
+  when: kc_auth_response.status == 200
   register: kc_users_get_response
   with_items:
     - "{{ kcdev_userid.stdout }}"
@@ -98,6 +106,6 @@
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
-  when: kc_auth_response.status != 503 and item.status == 200
+  when: kc_auth_response.status == 200 and item.status == 200
   with_items:
     - "{{ kc_users_get_response.results }}"
