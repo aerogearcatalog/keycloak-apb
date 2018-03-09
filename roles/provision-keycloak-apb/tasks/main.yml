@@ -18,7 +18,7 @@
 - include_tasks: configure-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
-    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace) }}"
+    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
   when: not USE_SHARED_SERVICE
 
 - block:
@@ -26,7 +26,7 @@
   - include_tasks: addrealmuser-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
-    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace) }}"
+    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
   when:
     - USE_SHARED_SERVICE
     - SHARED_HOST is defined
