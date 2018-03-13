@@ -55,57 +55,29 @@
   fail: msg="Failed to get access token. The user {{ kcdev_username.stdout }} is unauthorized to perform this action"
   when: kc_auth_response.status == 403
 
-- name: Get {{ kc_configmap_user.stdout }} and {{ kc_configmap_user.stdout }}-bearer clients in realm {{ kc_configmap_realm.stdout }}
+- name: Delete {{ kc_configmap_user.stdout }} in realm {{ kc_configmap_realm.stdout }}
   uri:
     url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/clients/{{ item }}"
-    method: GET
+    method: DELETE
     validate_certs: no
     headers:
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
-    status_code: 200, 404
+    status_code: 204, 404
     return_content: yes
   when: kc_auth_response.status == 200
-  register: kc_clients_get_response
   with_items:
     - "{{ kc_configmap_user.stdout }}"
     - "{{ kc_configmap_user.stdout }}-bearer"
 
-- name: Delete {{ kc_configmap_user.stdout }} in realm {{ kc_configmap_realm.stdout }}
-  uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/clients/{{ item.json.id }}"
-    method: DELETE
-    validate_certs: no
-    headers:
-      Authorization: "bearer {{ kc_auth_response.json.access_token }}"
-    status_code: 204
-    return_content: yes
-  when: kc_auth_response.status == 200 and item.status == 200
-  with_items:
-    - "{{ kc_clients_get_response.results }}"
-
-- name: Get {{ kcdev_username.stdout }} user in realm {{ kc_configmap_realm.stdout }}
-  uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/users/{{ item }}"
-    method: GET
-    validate_certs: no
-    headers:
-      Authorization: "bearer {{ kc_auth_response.json.access_token }}"
-    status_code: 200, 404
-    return_content: yes
-  when: kc_auth_response.status == 200
-  register: kc_users_get_response
-  with_items:
-    - "{{ kcdev_userid.stdout }}"
-
 - name: Delete {{ kcdev_username.stdout }} user in realm {{ kc_configmap_realm.stdout }}
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/users/{{ item.json.id }}"
+    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/users/{{ item }}"
     method: DELETE
     validate_certs: no
     headers:
       Authorization: "bearer {{ kc_auth_response.json.access_token }}"
-    status_code: 204
+    status_code: 204, 404
     return_content: yes
-  when: kc_auth_response.status == 200 and item.status == 200
+  when: kc_auth_response.status == 200
   with_items:
-    - "{{ kc_users_get_response.results }}"
+    - "{{ kcdev_userid.stdout }}"
