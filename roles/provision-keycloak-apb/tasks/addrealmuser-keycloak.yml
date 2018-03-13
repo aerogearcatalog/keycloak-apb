@@ -108,6 +108,7 @@
       USERID: "{{ KCDEV_USERID }}"
       USERNAME: "{{ KCDEV_USERNAME }}"
       PASSWORD: "{{ KCDEV_PASSWORD }}"
+      IS_SHARED: "{{ USE_SHARED_SERVICE }}"
 
 - k8s_v1_secret:
     name: '{{ keycloak_secret_name }}'
