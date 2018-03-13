@@ -5,6 +5,8 @@
 - set_fact:
     KEYCLOAK_REALM: "{{ _apb_bind_creds.bearer_installation.realm }}"
     KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
+
+- set_fact:
     KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
 
 - name: Generate keycloak auth token
