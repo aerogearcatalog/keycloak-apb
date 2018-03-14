@@ -129,18 +129,19 @@
 - name: Encode admin user credentials
   asb_encode_binding:
     fields:
+      USERID: "{{ ADMIN_USERNAME }}"
       USERNAME: "{{ ADMIN_USERNAME }}"
       PASSWORD: "{{ ADMIN_PASSWORD }}"
       IS_SHARED: "{{ USE_SHARED_SERVICE }}"
 
 - k8s_v1_secret:
-    name: '{{ keycloak_secret_name }}'
-    namespace: '{{ namespace }}'
+    name: "{{ keycloak_secret_name }}"
+    namespace: "{{ namespace }}"
     labels:
       name: keycloak
       mobile: enabled
       serviceName: keycloak
     string_data:
-      user_id: '{{ ADMIN_USERNAME }}'
-      user_name: '{{ ADMIN_USERNAME }}'
-      user_passwd: '{{ ADMIN_PASSWORD }}'
+      user_id: "{{ ADMIN_USERNAME }}"
+      user_name: "{{ ADMIN_USERNAME }}"
+      user_passwd: "{{ ADMIN_PASSWORD }}"

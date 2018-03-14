@@ -111,13 +111,13 @@
       IS_SHARED: "{{ USE_SHARED_SERVICE }}"
 
 - k8s_v1_secret:
-    name: '{{ keycloak_secret_name }}'
-    namespace: '{{ namespace }}'
+    name: "{{ keycloak_secret_name }}"
+    namespace: "{{ namespace }}"
     labels:
       name: keycloak
       mobile: enabled
       serviceName: keycloak
     string_data:
-      user_id: '{{ KCDEV_USERID }}'
-      user_name: '{{ KCDEV_USERNAME }}'
-      user_passwd: '{{ KCDEV_PASSWORD }}'
+      user_id: "{{ KCDEV_USERID }}"
+      user_name: "{{ KCDEV_USERNAME }}"
+      user_passwd: "{{ KCDEV_PASSWORD }}"
