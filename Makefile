@@ -7,11 +7,11 @@ PWD=$(shell pwd)
 LAST_COMMIT=$(shell git rev-parse HEAD)
 ORIGIN = origin
 
+build_and_push: apb_build docker_push apb_push
+
 .PHONY: minishift_pull
 minishift_pull:
 	minishift ssh -- docker pull $(DOCKERHOST)/$(DOCKERORG)/$(IMAGENAME):$(TAG)
-
-build_and_push: apb_build docker_push apb_push
 
 .PHONY: apb_build
 apb_build:
