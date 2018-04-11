@@ -26,9 +26,10 @@
     var: keycloak_auth_response
     verbosity: 2
 
-- name: Delete client {{ _apb_bind_creds.resource }} in realm {{ KEYCLOAK_REALM }}
+# Delete public client
+- name: Delete client {{ _apb_bind_creds.public_client_name }} in realm {{ KEYCLOAK_REALM }}
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.public_client_id }}"
     method: DELETE
     validate_certs: no
     headers:
@@ -36,3 +37,22 @@
     status_code: 204
     return_content: yes
   when: keycloak_auth_response.status != 503
+
+# Delete bearer client
+- name: Delete client {{ _apb_bind_creds.bearer_client_name }} in realm {{ KEYCLOAK_REALM }}
+  uri:
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.bearer_client_id }}"
+    method: DELETE
+    validate_certs: no
+    headers:
+      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+    status_code: 204
+    return_content: yes
+  when: keycloak_auth_response.status != 503
+
+# Delete client configmap
+- name: Delete {{ _apb_bind_creds.name }} configmap
+  k8s_v1_config_map:
+    name: 'keycloak-{{ _apb_bind_creds.name }}'
+    namespace: '{{ namespace }}'
+    state: absent

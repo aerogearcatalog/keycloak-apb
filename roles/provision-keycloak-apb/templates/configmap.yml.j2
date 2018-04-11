@@ -12,4 +12,3 @@ data:
   realm: {{ KEYCLOAK_REALM }}
   name: keycloak
   uri: {{ KEYCLOAK_HOST }}
-  public_installation: "{{ installation | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}"

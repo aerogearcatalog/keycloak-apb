@@ -1,12 +1,4 @@
 ---
-- name: Generate Username
-  shell: tr -d -c "a-zA-Z" < /dev/urandom | head -c 20
-  register: generated_username
-
-- name: Generate Password
-  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
-  register: generated_password
-
 - name: "Generate keycloak auth token"
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
@@ -47,47 +39,12 @@
     status_code: 201
   when: keycloak_realm_exists.status == 404
 
-- name: Create {{ generated_username.stdout }} client in realm {{ KEYCLOAK_REALM }}
-  uri:
-    url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
-    method: POST
-    body: '{"id": "{{ generated_username.stdout }}", "secret": "{{ generated_password.stdout }}", "redirectUris":["http://localhost:*"], "webOrigins":["http://localhost:8100"], "publicClient": true }'
-    validate_certs: no
-    body_format: json
-    headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 201
-
-- name: Get installation details
-  uri:
-    url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ generated_username.stdout }}/installation/providers/keycloak-oidc-keycloak-json"
-    method: GET
-    validate_certs: no
-    headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 200
-    return_content: yes
-  register: installation_text
-
-- set_fact: installation="{{ installation_text.content | from_json }}"
-
-- name: Create client config from template
-  template:
-    src: installation.json.j2
-    dest: /tmp/installation.json
-
-- name: Retrieve client config
-  shell: cat /tmp/installation.json
-  register: installation_text
-
-- set_fact: installation="{{ installation_text.stdout | from_json }}"
-
 - name: Create keycloak configmap template
   template:
     src: configmap.yml.j2
     dest: /tmp/configmap.yaml
 
-- name: Create keycloak public client config map
+- name: Create keycloak configmap
   shell: oc create -f /tmp/configmap.yaml -n {{ namespace }}
 
 - name: delete configmap template file

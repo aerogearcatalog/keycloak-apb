@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ keycloak_configmap_name }}-{{ consumer }}
+  namespace: {{ namespace }}
+  labels:
+    mobile: enabled
+    serviceName: keycloak
+    consumerID: {{ consumer }}
+data:
+  bearer_client_id: {{ BEARER_CLIENT_ID }}
+  bearer_client_secret: {{ CLIENT_SECRET }}
+  bearer_installation: "{{ bearer_installation | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}"
+  public_client_id: {{ PUBLIC_CLIENT_ID }}
+  public_client_secret: {{ CLIENT_SECRET }}
+  public_installation: "{{ installation | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}"
