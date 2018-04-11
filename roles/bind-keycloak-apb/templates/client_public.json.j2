@@ -3,5 +3,7 @@
   "clientId": "{{ CLIENT_NAME }}-{{ CLIENT_TYPE }}",
   "name": "{{ CLIENT_NAME }}",
   "secret": "{{ CLIENT_SECRET }}",
-  "bearerOnly": true
+  "redirectUris":["http://localhost:*"], 
+  "webOrigins":["http://localhost:8100"], 
+  "publicClient": true
 }
