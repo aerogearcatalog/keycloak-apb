@@ -68,6 +68,9 @@
   fail: msg="{{ PUBLIC_CLIENT_NAME }} client already exists in the {{ KEYCLOAK_REALM }} realm"
   when: create_client_public.status == 409
 
+- name: Delete public client template file
+  file: path=/tmp/client_public.json state=absent
+
 # Create bearer client
 - name: Generate bearer client template
   template:
@@ -91,6 +94,9 @@
 - name: Check for bearer client conflict
   fail: msg="{{ BEARER_CLIENT_NAME }} client already exists in the {{ KEYCLOAK_REALM }} realm"
   when: create_client_bearer.status == 409
+
+- name: Delete bearer client template file
+  file: path=/tmp/client_bearer.json state=absent
 
 - name: Get public client installation details
   uri:
@@ -125,6 +131,9 @@
 
 - name: Create client configmap
   shell: oc create -f /tmp/configmap.yaml -n {{ namespace }}
+
+- name: Delete client configmap template file
+  file: path=/tmp/configmap.yaml state=absent
 
 - name: Encode {{ consumer }} credentials
   asb_encode_binding:
