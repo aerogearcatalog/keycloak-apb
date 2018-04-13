@@ -11,10 +11,4 @@ data:
   realm: {{ KEYCLOAK_REALM }}
   name: keycloak
   uri: {{ KEYCLOAK_HOST }}
-  bearer_client_id: {{ generated_username.stdout }}-bearer
-  bearer_client_secret: {{ generated_password.stdout }}
-  bearer_installation: "{{ installationbearer | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}"
-  public_client_id: {{ generated_username.stdout }}
-  public_client_secret: {{ generated_password.stdout }}
   public_installation: "{{ installation | regex_replace('(u\'|\')', '\\\"') | replace(': True', ': true') }}"
-
