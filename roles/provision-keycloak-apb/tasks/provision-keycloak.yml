@@ -141,6 +141,7 @@
       name: keycloak
       mobile: enabled
       serviceName: keycloak
+      serviceInstanceID: '{{_apb_service_instance_id}}'
     string_data:
       user_id: "{{ ADMIN_USERNAME }}"
       user_name: "{{ ADMIN_USERNAME }}"

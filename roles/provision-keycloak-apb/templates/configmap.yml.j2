@@ -6,6 +6,7 @@ metadata:
   labels:
     mobile: enabled
     serviceName: keycloak
+    serviceInstanceID: {{ _apb_service_instance_id }}
 data:
   type: keycloak
   realm: {{ KEYCLOAK_REALM }}
