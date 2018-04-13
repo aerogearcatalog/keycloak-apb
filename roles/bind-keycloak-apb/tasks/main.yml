@@ -19,9 +19,9 @@
     KEYCLOAK_URI: "{{ keycloak_configmap_uri.stdout }}"
     CLIENT_SECRET: "{{ generated_client_secret.stdout }}"
     PUBLIC_CLIENT_ID: "{{ generated_client_id.stdout }}-public"
-    PUBLIC_CLIENT_NAME: "{{ consumer }}-public"
+    PUBLIC_CLIENT_NAME: "{{ clientId }}-public"
     BEARER_CLIENT_ID: "{{ generated_client_id.stdout }}-bearer"
-    BEARER_CLIENT_NAME: "{{ consumer }}-bearer"
+    BEARER_CLIENT_NAME: "{{ clientId }}-bearer"
 
 - set_fact:
     KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
@@ -135,10 +135,10 @@
 - name: Delete client configmap template file
   file: path=/tmp/configmap.yaml state=absent
 
-- name: Encode {{ consumer }} credentials
+- name: Encode {{ clientId }} credentials
   asb_encode_binding:
     fields:
-      name: "{{ consumer }}"
+      name: "{{ clientId }}"
       uri: "{{ KEYCLOAK_URI }}"
       bearer_client_name: "{{ BEARER_CLIENT_NAME }}"
       bearer_client_id: "{{ BEARER_CLIENT_ID }}"

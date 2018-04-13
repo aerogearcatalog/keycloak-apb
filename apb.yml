@@ -43,7 +43,7 @@ plans:
       type: string
       title: URL of the shared service
     bind_parameters:
-    - name: consumer
+    - name: clientId
       required: True
       title: Service name or Client ID
       type: string

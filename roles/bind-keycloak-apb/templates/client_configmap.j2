@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ keycloak_configmap_name }}-{{ consumer }}
+  name: {{ keycloak_configmap_name }}-{{ clientId }}
   namespace: {{ namespace }}
   labels:
     mobile: enabled
     serviceName: keycloak
-    consumerID: {{ consumer }}
+    clientId: {{ clientId }}
 data:
   bearer_client_id: {{ BEARER_CLIENT_ID }}
   bearer_client_secret: {{ CLIENT_SECRET }}
