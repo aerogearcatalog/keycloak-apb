@@ -16,7 +16,7 @@ minishift_pull:
 
 .PHONY: apb_build
 apb_build:
-	docker run --rm --privileged -v $(PWD):/mnt:z -v $(HOME)/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $(USER) docker.io/ansibleplaybookbundle/apb-tools:$(APB_TAG) prepare
+	apb prepare
 	docker build -t $(DOCKERHOST)/$(DOCKERORG)/$(IMAGENAME):$(TAG) .
 
 .PHONY: docker_push
@@ -25,7 +25,7 @@ docker_push:
 
 .PHONY: apb_push
 apb_push:
-	 docker run --rm --privileged -v $(PWD):/mnt:z -v $(HOME)/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $(USER) docker.io/ansibleplaybookbundle/apb-tools:$(APB_TAG) push
+	apb push
 
 .PHONY: apb_release
 apb_release:
@@ -40,4 +40,3 @@ apb_release:
     else
 				$(error Aborting release process, since local files are modified)
     endif
-
