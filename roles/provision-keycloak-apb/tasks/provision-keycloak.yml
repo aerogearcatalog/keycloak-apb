@@ -113,7 +113,7 @@
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
 - name: Get the name of the keycloak pod
-  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[*].name=="keycloak")].metadata.name}'
+  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="keycloak")].metadata.name}'
   register: keycloak_pod_name
   retries: 10
   until: '"keycloak" in keycloak_pod_name.stdout'
