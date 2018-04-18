@@ -1,12 +1,14 @@
+---
 - name: Retrieve route to keycloak
   shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath={.data.uri}"
   register: keycloak_uri
 
 - set_fact:
-    KEYCLOAK_REALM: "{{ _apb_bind_creds.bearer_installation.realm }}"
     KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
+    CLIENT_CONFIG: "{{ _apb_bind_creds.config | from_json }}"
 
 - set_fact:
+    KEYCLOAK_REALM: "{{ CLIENT_CONFIG.realm }}"
     KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
 
 - name: Generate keycloak auth token
@@ -22,14 +24,10 @@
          keycloak_auth_response.status in [200, 401, 403]
   ignore_errors: yes
 
-- debug:
-    var: keycloak_auth_response
-    verbosity: 2
-
-# Delete public client
-- name: Delete client {{ _apb_bind_creds.public_client_name }} in realm {{ KEYCLOAK_REALM }}
+# Delete Keycloak client
+- name: Delete client {{ _apb_bind_creds.name }} in realm {{ KEYCLOAK_REALM }}
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.public_client_id }}"
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
     method: DELETE
     validate_certs: no
     headers:
@@ -38,21 +36,9 @@
     return_content: yes
   when: keycloak_auth_response.status != 503
 
-# Delete bearer client
-- name: Delete client {{ _apb_bind_creds.bearer_client_name }} in realm {{ KEYCLOAK_REALM }}
-  uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.bearer_client_id }}"
-    method: DELETE
-    validate_certs: no
-    headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
-    status_code: 204
-    return_content: yes
-  when: keycloak_auth_response.status != 503
-
-# Delete client configmap
-- name: Delete {{ _apb_bind_creds.name }} configmap
-  k8s_v1_config_map:
-    name: 'keycloak-{{ _apb_bind_creds.name }}'
-    namespace: '{{ namespace }}'
+# Delete client secret
+- name: Delete keycloak-{{ _apb_bind_creds.client_name }} secret
+  k8s_v1_secret:
+    name: "{{ keycloak_secret_name }}-{{ _apb_bind_creds.client_name | lower }}"
+    namespace: "{{ namespace }}"
     state: absent
