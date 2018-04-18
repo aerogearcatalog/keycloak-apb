@@ -25,7 +25,7 @@
   ignore_errors: yes
 
 # Delete Keycloak client
-- name: Delete client {{ _apb_bind_creds.name }} in realm {{ KEYCLOAK_REALM }}
+- name: Delete client {{ CLIENT_CONFIG.resource }} in realm {{ KEYCLOAK_REALM }}
   uri:
     url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
     method: DELETE
@@ -39,6 +39,6 @@
 # Delete client secret
 - name: Delete keycloak-{{ _apb_bind_creds.client_name }} secret
   k8s_v1_secret:
-    name: "{{ keycloak_secret_name }}-{{ _apb_bind_creds.client_name | lower }}"
+    name: "{{ keycloak_secret_name }}-{{ CLIENT_CONFIG.resource | lower }}"
     namespace: "{{ namespace }}"
     state: absent

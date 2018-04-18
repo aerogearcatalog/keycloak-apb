@@ -84,7 +84,7 @@
 # Create keycloak client secret
 - name: Creating {{ CLIENT_NAME }} client secret
   k8s_v1_secret:
-    name: "{{ keycloak_secret_name }}-{{ CLIENT_NAME | lower }}"
+    name: "{{ keycloak_secret_name }}-{{ CLIENT_NAME | lower }}-{{ CLIENT_TYPE }}"
     namespace: '{{ namespace }}'
     annotations:
       configType: "json"
