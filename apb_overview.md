@@ -17,7 +17,7 @@ This document outlines the steps for each APB task to help people to understand 
     * Routes (either HTTP or HTTPS depends on the option) for Keycloak
     * Create a new realm in Keycloak using the current OpenShift project name
     * Create a new secret in the current OpenShift namespace with admin user credentials
-    * Create a new configmap (labelled with the Keycloak service instance ID) in the current namespace with the following info:
+    * Create a new secret (labelled with the Keycloak service instance ID) in the current namespace with the following info:
         * Name and type of the service
         * Realm name
         * URL of the Keycloak service
@@ -31,15 +31,14 @@ This document outlines the steps for each APB task to help people to understand 
 # Bind
 
 1. Get the Keycloak admin user token using the Keycloak admin user credential
-2. Create a new bearer-only client with a generated ID and password in Keycloak. It is created in the realm that matches the current namespace
-3. Create a new public Keycloak client with generated ID and password in the newly created realm
-4. Create a new configmap with details about the newly created public and bearer-only clients 
-5. Persist the newly created client name and password as `_apb_bind_creds`
+2. Create a new bearer-only or public client with a generated ID and password in Keycloak. It is created in the realm that matches the current namespace
+3. Create a new secret with config details about the newly created Keycloak client 
+4. Persist the newly created client name and password as `_apb_bind_creds`
 
 # Unbind
 
 1. Get the Keycloak admin user token using the Keycloak admin user credential
-2. Delete the public and bearer-only clients from Keycloak and the OpenShift client configmap using the data persisted in `_apb_bind_creds`
+2. Delete the public or bearer-only client created in the bind step from Keycloak and the OpenShift client secret using the data persisted in `_apb_bind_creds`
 
 # Deprovision
 
