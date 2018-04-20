@@ -2,7 +2,7 @@ version: 1.0
 name: keycloak-apb
 description: Keycloak - Open Source Identity and Access Management
 bindable: True
-async: optional
+async: required
 tags: 
   - mobile-service
   - mobile-client-enabled
