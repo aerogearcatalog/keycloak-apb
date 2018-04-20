@@ -5,6 +5,7 @@ bindable: True
 async: optional
 tags: 
   - mobile-service
+  - mobile-client-enabled
 metadata:
   displayName: Keycloak
   imageUrl: "https://pbs.twimg.com/profile_images/702119821979344897/oAC05cEB_400x400.png"
@@ -43,7 +44,13 @@ plans:
       type: string
       title: URL of the shared service
     bind_parameters:
-    - name: service
+    - name: CLIENT_NAME
       required: True
-      title: The service the client is for
+      title: Service name or Client ID
       type: string
+    - name: CLIENT_TYPE
+      required: True
+      title: Keycloak client type
+      type: enum
+      enum: ['bearer', 'public']
+      default: 'bearer'

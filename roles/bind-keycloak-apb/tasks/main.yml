@@ -7,22 +7,23 @@
   register: generated_client_secret
 
 - name: Retrieve route to keycloak
-  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath={.data.uri}"
+  shell: "oc get configmaps/{{ keycloak_service_name }} -n {{ namespace }} -o jsonpath={.data.uri}"
   register: keycloak_configmap_uri
 
-- name: Retrieve {{ _apb_provision_creds.USERNAME }} user realm
-  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath={.data.realm}"
+- name: Retrieve keycloak realm
+  shell: "oc get configmaps/{{ keycloak_service_name }} -n {{ namespace }} -o jsonpath={.data.realm}"
   register: keycloak_configmap_realm
 
 - set_fact:
     KEYCLOAK_REALM: "{{ keycloak_configmap_realm.stdout }}"
     KEYCLOAK_URI: "{{ keycloak_configmap_uri.stdout }}"
-    CLIENT_ID: "{{ generated_client_id.stdout }}"
     CLIENT_SECRET: "{{ generated_client_secret.stdout }}"
+    CLIENT_ID: "{{ generated_client_id.stdout }}"
 
 - set_fact:
     KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
 
+# Get keycloak auth token
 - name: Generate keycloak auth token for {{ _apb_provision_creds.USERNAME }}
   uri:
     url: "{{ KEYCLOAK_URI }}/auth/realms/{{ KCADM_REALM }}/protocol/openid-connect/token"
@@ -40,30 +41,34 @@
     var: keycloak_auth_response
     verbosity: 2
 
-- name: Generate client bearer from template
+# Create Keycloak client
+- name: Generate {{ CLIENT_TYPE }} client template
   template:
-    src: client_bearer.json.j2
-    dest: /tmp/client_bearer.json
+    src: client_{{ CLIENT_TYPE }}.json.j2
+    dest: /tmp/client.json
   when: keycloak_auth_response.status != 503
 
-- name: Create {{ service }}-bearer client in {{ KEYCLOAK_REALM }} realm
+- name: Create {{ CLIENT_TYPE }} client in {{ KEYCLOAK_REALM }} realm
   uri:
     url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: POST
-    body: "{{ lookup('file','/tmp/client_bearer.json') }}"
+    body: "{{ lookup('file','/tmp/client.json') }}"
     validate_certs: no
     body_format: json
     headers:
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: [201, 409]
   when: keycloak_auth_response.status != 503
-  register: create_client_bearer
+  register: create_keycloak_client
 
-- name: Check for client bearer conflict
-  fail: msg="{{ service }}-bearer client already exists on the {{ KEYCLOAK_REALM }} realm"
-  when: create_client_bearer.status == 409
+- name: Check for client conflict
+  fail: msg="{{ CLIENT_NAME }} client already exists in the {{ KEYCLOAK_REALM }} realm"
+  when: create_keycloak_client.status == 409
 
-- name: Get installation details bearer
+- name: Delete {{ CLIENT_TYPE }} client template file
+  file: path=/tmp/client.json state=absent
+
+- name: Get {{ CLIENT_TYPE }} client installation details
   uri:
     url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ CLIENT_ID }}/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
@@ -72,14 +77,31 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 200
     return_content: yes
-  register: installation_bearer
+  register: installation_details
 
-- name: Encode {{ service }} credentials
+- set_fact: CLIENT_CONFIG="{{ installation_details.content | from_json }}"
+
+# Create keycloak client secret
+- name: Creating {{ CLIENT_NAME }} client secret
+  k8s_v1_secret:
+    name: "{{ keycloak_secret_name }}-{{ CLIENT_NAME | lower }}-{{ CLIENT_TYPE }}"
+    namespace: '{{ namespace }}'
+    annotations:
+      configType: "json"
+    labels:
+      mobile: enabled
+      serviceName: keycloak
+      clientId: "{{ CLIENT_NAME }}"
+    string_data:
+      client_name: "{{ CLIENT_NAME }}"
+      client_id: "{{ CLIENT_ID }}"
+      uri: "{{ KEYCLOAK_URI }}"
+      config: "{{ CLIENT_CONFIG | to_nice_json }}"
+
+- name: Encode {{ CLIENT_NAME }} credentials
   asb_encode_binding:
     fields:
-      name: "{{ service }}"
-      resource: "{{ service }}-bearer"
-      bearer_installation: "{{ installation_bearer.content }}"
-      uri: "{{ KEYCLOAK_URI }}"
+      client_name: "{{ CLIENT_NAME }}"
       client_id: "{{ CLIENT_ID }}"
-      client_secret: "{{ CLIENT_SECRET }}"
+      uri: "{{ KEYCLOAK_URI }}"
+      config: "{{ CLIENT_CONFIG | to_nice_json }}"
