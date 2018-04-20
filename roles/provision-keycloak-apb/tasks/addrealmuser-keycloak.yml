@@ -42,7 +42,7 @@
       Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
 
-- name: Get all available client in {{ KEYCLOAK_REALM }} realm
+- name: Get all available clients in {{ KEYCLOAK_REALM }} realm
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients"
     method: GET
@@ -108,7 +108,8 @@
       USERID: "{{ KCDEV_USERID }}"
       USERNAME: "{{ KCDEV_USERNAME }}"
       PASSWORD: "{{ KCDEV_PASSWORD }}"
-      IS_SHARED: "{{ USE_SHARED_SERVICE }}"
+      USE_SHARED_SERVICE: "{{ USE_SHARED_SERVICE }}"
+  when: encode_asb_binding
 
 - k8s_v1_secret:
     name: "{{ keycloak_secret_name }}"

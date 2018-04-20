@@ -1,0 +1,10 @@
+ADMIN_USERNAME: "admin"
+ADMIN_PASSWORD: "admin"
+POSTGRESQL_EPHEMERAL: true
+_apb_service_instance_id: 'dummy_service_instance_id'
+_apb_provision_creds:
+  USERID: "{{ ADMIN_USERNAME }}"
+  USERNAME: "{{ ADMIN_USERNAME }}"
+  PASSWORD: "{{ ADMIN_PASSWORD }}"
+  USE_SHARED_SERVICE: "{{ USE_SHARED_SERVICE }}"
+encode_asb_binding: no

@@ -5,12 +5,12 @@
     namespace: '{{ namespace }}'
     state: absent
   with_items:
-  - keycloak
+  - '{{ keycloak_secret_name }}'
 
-- name: Delete config maps
+- name: Delete configmaps
   k8s_v1_config_map:
     name: '{{ item }}'
     namespace: '{{ namespace }}'
     state: absent
   with_items:
-  - keycloak
+  - '{{ keycloak_configmap_name }}'
