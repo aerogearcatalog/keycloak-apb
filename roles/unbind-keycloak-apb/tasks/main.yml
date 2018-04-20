@@ -4,14 +4,14 @@
   register: keycloak_uri
 
 - set_fact:
-    KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
     CLIENT_CONFIG: "{{ _apb_bind_creds.config | from_json }}"
 
 - set_fact:
     KEYCLOAK_REALM: "{{ CLIENT_CONFIG.realm }}"
+    KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
 
 - set_fact:
-    KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
+    KCADM_REALM: "{{ _apb_provision_creds.USE_SHARED_SERVICE | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
 
 - name: Generate keycloak auth token
   uri:
