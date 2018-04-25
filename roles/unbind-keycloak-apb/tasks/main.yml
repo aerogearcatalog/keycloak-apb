@@ -9,6 +9,8 @@
 
 - set_fact:
     KEYCLOAK_REALM: "{{ CLIENT_CONFIG.realm }}"
+
+- set_fact:
     KCADM_REALM: "{{ _apb_provision_creds.IS_SHARED | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
 
 - name: Generate keycloak auth token
