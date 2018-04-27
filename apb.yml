@@ -44,13 +44,12 @@ plans:
       type: string
       title: URL of the shared service
     bind_parameters:
-    - name: CLIENT_NAME
+    - name: CLIENT_ID
       required: True
-      title: Service name or Client ID
+      title: Mobile client ID or service name
       type: string
     - name: CLIENT_TYPE
       required: True
       title: Keycloak client type
       type: enum
       enum: ['bearer', 'public']
-      default: 'public'
