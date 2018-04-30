@@ -27,9 +27,9 @@
   ignore_errors: yes
 
 # Delete Keycloak client
-- name: Delete client {{ CLIENT_CONFIG.resource }} in realm {{ KEYCLOAK_REALM }}
+- name: Delete client {{ _apb_bind_creds.clientId }} in realm {{ KEYCLOAK_REALM }}
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.client_id }}"
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.id }}"
     method: DELETE
     validate_certs: no
     headers:
@@ -39,8 +39,8 @@
   when: keycloak_auth_response.status != 503
 
 # Delete client secret
-- name: Delete keycloak-{{ _apb_bind_creds.client_name }} secret
+- name: Delete keycloak-{{ _apb_bind_creds.clientName }} secret
   k8s_v1_secret:
-    name: "{{ keycloak_secret_name }}-{{ CLIENT_CONFIG.resource | lower }}"
+    name: "{{ keycloak_secret_name }}-{{ _apb_bind_creds.clientId | lower }}"
     namespace: "{{ namespace }}"
     state: absent

@@ -18,7 +18,7 @@
     KEYCLOAK_REALM: "{{ keycloak_configmap_realm.stdout }}"
     KEYCLOAK_URI: "{{ keycloak_configmap_uri.stdout }}"
     CLIENT_SECRET: "{{ generated_client_secret.stdout }}"
-    CLIENT_ID: "{{ generated_client_id.stdout }}"
+    GENERATED_CLIENT_ID: "{{ generated_client_id.stdout }}"
 
 - set_fact:
     KCADM_REALM: "{{ _apb_provision_creds.USE_SHARED_SERVICE | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
@@ -62,7 +62,7 @@
   register: create_keycloak_client
 
 - name: Check for client conflict
-  fail: msg="{{ CLIENT_NAME }} client already exists in the {{ KEYCLOAK_REALM }} realm"
+  fail: msg="{{ CLIENT_ID }} client already exists in the {{ KEYCLOAK_REALM }} realm"
   when: create_keycloak_client.status == 409
 
 - name: Delete {{ CLIENT_TYPE }} client template file
@@ -70,7 +70,7 @@
 
 - name: Get {{ CLIENT_TYPE }} client installation details
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ CLIENT_ID }}/installation/providers/keycloak-oidc-keycloak-json"
+    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ GENERATED_CLIENT_ID }}/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
@@ -82,27 +82,29 @@
 - set_fact: CLIENT_CONFIG="{{ installation_details.content | from_json }}"
 
 # Create keycloak client secret
-- name: Creating {{ CLIENT_NAME }} client secret
+- name: Creating {{ CLIENT_ID }} client secret
   k8s_v1_secret:
-    name: "{{ keycloak_secret_name }}-{{ CLIENT_NAME | lower }}-{{ CLIENT_TYPE }}"
+    name: "{{ keycloak_secret_name }}-{{ CLIENT_ID | lower }}-{{ CLIENT_TYPE }}"
     namespace: '{{ namespace }}'
     annotations:
       configType: "json"
     labels:
       mobile: enabled
       serviceName: keycloak
-      clientId: "{{ CLIENT_NAME }}"
+      clientId: "{{ CLIENT_ID }}"
     string_data:
-      client_name: "{{ CLIENT_NAME }}"
-      client_id: "{{ CLIENT_ID }}"
+      clientName: "{{ CLIENT_ID }}"
+      clientId: "{{ CLIENT_ID }}-{{ CLIENT_TYPE }}"
+      id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
 
-- name: Encode {{ CLIENT_NAME }} credentials
+- name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
     fields:
-      client_name: "{{ CLIENT_NAME }}"
-      client_id: "{{ CLIENT_ID }}"
+      clientName: "{{ CLIENT_ID }}"
+      clientId: "{{ CLIENT_ID }}-{{ CLIENT_TYPE }}"
+      id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_json }}"
   when: encode_asb_binding
