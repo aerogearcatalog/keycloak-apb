@@ -1,0 +1,7 @@
+name: keycloak
+title: AeroGear Keycloak Mobile Service
+version: 'latest'
+start_ROOT: ROOT:index.adoc
+nav:
+- modules/ROOT/nav.adoc
+
