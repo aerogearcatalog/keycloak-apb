@@ -44,3 +44,11 @@
     name: "{{ keycloak_secret_name }}-{{ _apb_bind_creds.clientId | lower }}"
     namespace: "{{ namespace }}"
     state: absent
+
+# Remove annotation from mobile client 
+- name: Remove annotations from client {{ _apb_bind_creds.clientName }}
+  shell: "oc annotate mobileclient {{ _apb_bind_creds.clientName }} {{ item }}- -n {{ namespace }}"
+  ignore_errors: yes
+  with_items:
+    - "{{ keycloak_realm_annotation }}"
+    - "{{ keycloak_uri_annotation }}"

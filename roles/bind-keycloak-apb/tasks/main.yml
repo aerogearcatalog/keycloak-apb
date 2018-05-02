@@ -99,6 +99,14 @@
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
 
+# Annotate the mobile client 
+- name: Annotate client {{ CLIENT_ID }}
+  shell: "oc annotate mobileclient {{ CLIENT_ID }} {{ item }} -n {{ namespace }}"
+  ignore_errors: yes
+  with_items:
+    - "{{ keycloak_realm_annotation }}={{ KEYCLOAK_REALM }}"
+    - "{{ keycloak_uri_annotation }}={{ KEYCLOAK_URI }}"
+    
 - name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
     fields:
