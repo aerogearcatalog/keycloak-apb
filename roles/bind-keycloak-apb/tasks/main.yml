@@ -14,7 +14,12 @@
   shell: "oc get configmaps/{{ keycloak_service_name }} -n {{ namespace }} -o jsonpath={.data.realm}"
   register: keycloak_configmap_realm
 
+- name: Get keycloak service instance name
+  shell: oc get serviceinstances -n {{ namespace }} -o json | jq '.items[] | select(.spec.externalID=="{{ _apb_service_instance_id }}") | .metadata.name'
+  register: keycloak_name
+
 - set_fact:
+    KEYCLOAK_NAME: "{{ keycloak_name.stdout }}"
     KEYCLOAK_REALM: "{{ keycloak_configmap_realm.stdout }}"
     KEYCLOAK_URI: "{{ keycloak_configmap_uri.stdout }}"
     CLIENT_SECRET: "{{ generated_client_secret.stdout }}"
@@ -99,13 +104,17 @@
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
 
+- set_fact: 
+    realm_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
+    uri_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/uri"
+   
 # Annotate the mobile client 
 - name: Annotate client {{ CLIENT_ID }}
   shell: "oc annotate mobileclient {{ CLIENT_ID }} {{ item }} -n {{ namespace }}"
   ignore_errors: yes
   with_items:
-    - "{{ keycloak_realm_annotation }}={{ KEYCLOAK_REALM }}"
-    - "{{ keycloak_uri_annotation }}={{ KEYCLOAK_URI }}"
+    - "{{ realm_annotation }}='{label: \"Keycloak Realm\", value: \"{{ KEYCLOAK_REALM }}\", type: \"string\"}'"
+    - "{{ uri_annotation }}='{label: \"Keycloak URL\", value: \"{{ KEYCLOAK_URI }}\", type: \"href\"}'"
     
 - name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
