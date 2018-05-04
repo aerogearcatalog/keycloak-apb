@@ -110,7 +110,7 @@
    
 # Annotate the mobile client 
 - name: Annotate client {{ CLIENT_ID }}
-  shell: "oc annotate mobileclient {{ CLIENT_ID }} {{ item }} -n {{ namespace }}"
+  shell: "oc annotate mobileclient {{ CLIENT_ID }} {{ item }} --overwrite=true -n {{ namespace }}"
   ignore_errors: yes
   with_items:
     - "{{ realm_annotation }}='{label: \"Keycloak Realm\", value: \"{{ KEYCLOAK_REALM }}\", type: \"string\"}'"
