@@ -1,0 +1,7 @@
+= Getting Started with the {Keycloak} Service
+
+After following the link:/aerogear/latest/minishift_install.inc.html[instructions for setting up Minishift] you can provision services, such as the {Keycloak} Service, from the OpenShift Catalog.
+
+== About the {Keycloak} Service
+
+The {Keycloak} service provides authentication and authorization for your mobile app.
