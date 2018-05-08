@@ -19,7 +19,13 @@ plans:
   - name: default
     description: Deploy keycloak
     free: True
-    metadata: {}
+    metadata:
+      mobileclient_bind_parameters_data:
+        - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
+        - '{"name": "CLIENT_TYPE", "value": "public", "type": "default"}'
+      serviceinstance_bind_parameters_data:
+        - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
+        - '{"name": "CLIENT_TYPE", "value": "bearer", "type": "default"}'
     parameters: 
     - name: ADMIN_USERNAME
       required: True
@@ -46,7 +52,7 @@ plans:
     bind_parameters:
     - name: CLIENT_ID
       required: True
-      title: Mobile client ID or service name
+      title: Mobile client ID/Service ID
       type: string
     - name: CLIENT_TYPE
       required: True
