@@ -14,7 +14,3 @@ keycloak_pv_claim_name: keycloak-metrics
 postgres_pv_claim_name: postgres
 keycloak_admin_realm_name: master
 encode_asb_binding: yes
-
-# Annotations
-keycloak_uri_annotation: binding.aerogear.org/keycloak-uri-href
-keycloak_realm_annotation: binding.aerogear.org/keycloak-realm
