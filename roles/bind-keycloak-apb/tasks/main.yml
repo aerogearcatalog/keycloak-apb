@@ -107,6 +107,7 @@
 - set_fact: 
     realm_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
     uri_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/uri"
+    realm_uri_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm-uri"
    
 # Annotate the mobile client 
 - name: Annotate client {{ CLIENT_ID }}
@@ -115,6 +116,7 @@
   with_items:
     - "{{ realm_annotation }}='{label: \"Keycloak Realm\", value: \"{{ KEYCLOAK_REALM }}\", type: \"string\"}'"
     - "{{ uri_annotation }}='{label: \"Keycloak URL\", value: \"{{ KEYCLOAK_URI }}\", type: \"href\"}'"
+    - "{{ realm_uri_annotation }}='{label: \"Keycloak Realm URL\", value: \"{{ KEYCLOAK_URI }}/auth/admin/master/console/#/realms/{{ KEYCLOAK_REALM }}\", type: \"href\"}'"
     
 - name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
