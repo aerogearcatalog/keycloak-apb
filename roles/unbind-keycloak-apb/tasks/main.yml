@@ -45,10 +45,16 @@
     namespace: "{{ namespace }}"
     state: absent
 
+- set_fact:
+    realm_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm"
+    uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/uri"
+    realm_uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm-uri"
+
 # Remove annotation from mobile client 
 - name: Remove annotations from client {{ _apb_bind_creds.clientName }}
   shell: "oc annotate mobileclient {{ _apb_bind_creds.clientName }} {{ item }}- -n {{ namespace }}"
   ignore_errors: yes
   with_items:
-    - "{{ keycloak_realm_annotation }}"
-    - "{{ keycloak_uri_annotation }}"
+    - "{{ realm_annotation }}"
+    - "{{ uri_annotation }}"
+    - "{{ realm_uri_annotation }}"

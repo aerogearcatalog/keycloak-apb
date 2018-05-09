@@ -126,4 +126,5 @@
       id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_json }}"
+      keycloakName: "{{ KEYCLOAK_NAME }}"
   when: encode_asb_binding
