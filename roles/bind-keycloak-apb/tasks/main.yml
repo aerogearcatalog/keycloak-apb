@@ -114,9 +114,9 @@
   shell: "oc annotate mobileclient {{ CLIENT_ID }} {{ item }} --overwrite=true -n {{ namespace }}"
   ignore_errors: yes
   with_items:
-    - "{{ realm_annotation }}='{label: \"Keycloak Realm\", value: \"{{ KEYCLOAK_REALM }}\", type: \"string\"}'"
-    - "{{ uri_annotation }}='{label: \"Keycloak URL\", value: \"{{ KEYCLOAK_URI }}\", type: \"href\"}'"
-    - "{{ realm_uri_annotation }}='{label: \"Keycloak Realm URL\", value: \"{{ KEYCLOAK_URI }}/auth/admin/master/console/#/realms/{{ KEYCLOAK_REALM }}\", type: \"href\"}'"
+    - "{{ realm_annotation }}='{\"label\": \"Keycloak Realm\", \"value\": \"{{ KEYCLOAK_REALM }}\", \"type\": \"string\"}'"
+    - "{{ uri_annotation }}='{\"label\": \"Keycloak URL\", \"value\": \"{{ KEYCLOAK_URI }}\", \"type\": \"href\"}'"
+    - "{{ realm_uri_annotation }}='{\"label\": \"Keycloak Realm URL\", \"value\": \"{{ KEYCLOAK_URI }}/auth/admin/master/console/#/realms/{{ KEYCLOAK_REALM }}\", \"type\": \"href\"}'"
     
 - name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
@@ -126,4 +126,5 @@
       id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}"
       config: "{{ CLIENT_CONFIG | to_json }}"
+      keycloakName: "{{ KEYCLOAK_NAME }}"
   when: encode_asb_binding
