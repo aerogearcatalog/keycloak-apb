@@ -101,7 +101,7 @@
       clientName: "{{ CLIENT_ID }}"
       clientId: "{{ CLIENT_ID }}-{{ CLIENT_TYPE }}"
       id: "{{ GENERATED_CLIENT_ID }}"
-      uri: "{{ KEYCLOAK_URI }}"
+      uri: "{{ KEYCLOAK_URI }}/auth"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
 
 - set_fact: 
