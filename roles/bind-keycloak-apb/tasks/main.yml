@@ -108,6 +108,10 @@
     realm_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
     uri_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/uri"
     realm_uri_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm-uri"
+
+- set_fact: 
+    public_client_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/public-client"
+  when: CLIENT_TYPE == "public"
    
 # Annotate the mobile client 
 - name: Annotate client {{ CLIENT_ID }}
@@ -117,7 +121,9 @@
     - "{{ realm_annotation }}='{\"label\": \"Keycloak Realm\", \"value\": \"{{ KEYCLOAK_REALM }}\", \"type\": \"string\"}'"
     - "{{ uri_annotation }}='{\"label\": \"Keycloak URL\", \"value\": \"{{ KEYCLOAK_URI }}\", \"type\": \"href\"}'"
     - "{{ realm_uri_annotation }}='{\"label\": \"Keycloak Realm URL\", \"value\": \"{{ KEYCLOAK_URI }}/auth/admin/master/console/#/realms/{{ KEYCLOAK_REALM }}\", \"type\": \"href\"}'"
-    
+    - "{{ public_client_annotation | default([]) }}='{\"label\": \"Public Client URL\", \"value\": \"{{ KEYCLOAK_URI }}/auth/admin/master/console/#/realms/{{ KEYCLOAK_REALM }}/clients/{{ GENERATED_CLIENT_ID }}\", \"type\": \"href\"}'"
+
+
 - name: Encode {{ CLIENT_ID }} credentials
   asb_encode_binding:
     fields:
