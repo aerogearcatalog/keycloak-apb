@@ -15,7 +15,7 @@
   register: keycloak_configmap_realm
 
 - name: Get keycloak service instance name
-  shell: oc get serviceinstances -n {{ namespace }} -o json | jq '.items[] | select(.spec.externalID=="{{ _apb_service_instance_id }}") | .metadata.name'
+  shell: oc get serviceinstances -n {{ namespace }} -o json | jq '.items[] | select(.spec.externalID=="{{ _apb_service_instance_id }}") | .metadata.name'  | cut -f2 -d'"'
   register: keycloak_name
 
 - set_fact:
@@ -103,6 +103,8 @@
       id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}/auth"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
+      name: "{{ KEYCLOAK_NAME }}"
+      type: "Keycloak"
 
 - set_fact: 
     realm_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
