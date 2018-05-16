@@ -49,6 +49,7 @@
     realm_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm"
     uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/uri"
     realm_uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm-uri"
+    public_client_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/public-client"
 
 # Remove annotation from mobile client 
 - name: Remove annotations from client {{ _apb_bind_creds.clientName }}
@@ -58,3 +59,4 @@
     - "{{ realm_annotation }}"
     - "{{ uri_annotation }}"
     - "{{ realm_uri_annotation }}"
+    - "{{ public_client_annotation }}"
