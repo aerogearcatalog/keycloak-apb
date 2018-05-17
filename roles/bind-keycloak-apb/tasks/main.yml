@@ -95,7 +95,7 @@
       configType: "json"
     labels:
       mobile: enabled
-      serviceName: keycloak
+      serviceName: "{{ keycloak_service_name }}"
       clientId: "{{ CLIENT_ID }}"
     string_data:
       clientName: "{{ CLIENT_ID }}"
@@ -103,7 +103,7 @@
       id: "{{ GENERATED_CLIENT_ID }}"
       uri: "{{ KEYCLOAK_URI }}/auth"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
-      name: "{{ KEYCLOAK_NAME }}"
+      name: "{{ keycloak_service_name }}"
       type: "Keycloak"
 
 - set_fact: 
