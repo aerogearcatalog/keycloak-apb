@@ -1,0 +1,20 @@
+= Provisioning the Auth Service
+
+When provisioning the Auth service, you are prompted for the following information:
+
+// tag::provisioning-auth[]
+
+* *Keycloak admin username*: Username for Keycloak administration 
+
+* *Keycloak admin password*: Password for the Keycloak admin user
+
+* *Name of the Keycloak realm*: Name of the keycloak realm. (defaults to current namespace)
+
+NOTE: A realm manages a set of users, credentials, roles, and groups. A user belongs to and logs into a realm. Realms are isolated from one another and can only manage and authenticate the users that they control.
+
+* *Connect to an existing shared service*: Select if you want to use an existing service and you have the URL and credentials to use that service.
+
+* *URL of the shared service*: Enter a value if you want to use an existing shared service.
+
+
+// end::provisioning-auth[]
