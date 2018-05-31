@@ -104,7 +104,7 @@
       uri: "{{ KEYCLOAK_URI }}/auth"
       config: "{{ CLIENT_CONFIG | to_nice_json }}"
       name: "{{ keycloak_service_name }}"
-      type: "Keycloak"
+      type: "keycloak"
 
 - set_fact: 
     realm_annotation: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
