@@ -3,90 +3,51 @@
 // https://github.com/feedhenry/fh-pipeline-library
 @Library('fh-pipeline-library') _
 
-def repositoryName = "keycloak-apb"
-def projectName = "test-${repositoryName}-${currentBuild.number}-${currentBuild.startTimeInMillis}"
-
 stage('Trust') {
     enforceTrustedApproval('aerogear')
 }
 
-node ('apb-test') {
+node ("ocp-slave") { 
+    def apb_container_id, pod_container_id, apb_pod_output
+    def apb_version = "sprint147.2"
+    
+    stage('Cleanup') {
+        deleteDir()
+    }
 
-    stage ('Checkout') {
+    stage('Cloning the repo') {
         checkout scm
     }
-    openshift.withCluster() {
 
-        try {
-            openshift.newProject(projectName)
+    stage('Run APB test') {
+        apb_container_id = sh (
+            script: "docker run --detach --net=host --privileged -v \$PWD:/mnt -v \$HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u \$UID docker.io/ansibleplaybookbundle/apb-tools:${apb_version} test --registry-route docker-registry.default.svc:5000",
+            returnStdout: true
+        ).trim()
+    }
 
-            openshift.withProject(projectName) {
+    stage('Watch the logs') {
+        
+        pod_container_id = sh (
+            script: "sleep 30 ; docker ps --filter since=${apb_container_id} | grep 'entrypoint.sh test' | awk '{print \$1}'",
+            returnStdout: true
+        ).trim()
+        
+        sh "docker logs -f ${pod_container_id}"
+    }
+    
+    stage('Get APB container logs and evaluate test result') {
 
-                stage ('Build') {
-                    def nb = openshift.newBuild("--name=${repositoryName}", "--binary")
-                    openshift.startBuild("${repositoryName}", "--from-dir=.")
-                    def buildSelector = nb.narrow("bc").related("builds")
+        apb_pod_output = sh (
+            // We must wait for APB container to finish. Otherwise `docker logs` command does not work.
+            script: "sleep 10 ; docker logs -f ${apb_container_id}",
+            returnStdout: true
+        ).trim()
 
-                    try {
-                        timeout(15) {
-                            buildSelector.untilEach(1) {
-                                buildPhase = it.object().status.phase
-                                println("Build phase:" + buildPhase)
-                                return (it.object().status.phase == "Complete")
-                            }
-                        }
-                    } catch (Exception e) {
-                        buildSelector.logs()
-                        error "Build timed out"
-                    }
-                }
-
-                stage ('Test') {
-                    // Add admin role to default service account within the project
-                    openshift.policy("add-role-to-user", "admin", "--serviceaccount=default")
-                    // Create a new pod for running the test.yml playbook
-                    openshift.run(
-                        "testing-pod",
-                        "--image=docker-registry.default.svc:5000/${projectName}/${repositoryName}",
-                        "--restart=Never",
-                        "--env POD_NAME=testing-pod",
-                        "--env POD_NAMESPACE=${projectName}",
-                        "--command", "--",
-                        "entrypoint.sh test --extra-vars '{\"namespace\": \"${projectName}\"}'"
-                    )
-                    podSelector = openshift.selector("pod", "testing-pod")
-
-                    try {
-                        timeout(15) {
-                            podSelector.untilEach(1) {
-                                podPhase = it.object().status.phase
-                                println("Pod status:" + podPhase)
-                                return (it.object().status.phase == "Succeeded")
-                            }
-                        }
-                    } catch (Exception e) {
-                        podSelector.logs()
-                        error "Pod didn't finish in time."
-                    }
-                    // Print out log from the testing pod
-                    podSelector.logs()
-                }
-
-                stage ('Cleanup') {
-                    openshift.delete("project", projectName)
-                }
-            }
-        } catch (Exception e) {
-            try {
-                timeout(15) {
-                    input message: 'The test failed. Click on "Approve" to delete the project. Otherwise it will be deleted after 15 minutes'
-                }
-            } catch (Exception e2) {
-                println("Waiting for a user input exceeded its time limit. Deleting the project now.")
-            }
-
-            openshift.delete("project", projectName)
-            error "Error when running the test: ${e}"
+        echo apb_pod_output
+        
+        if ( apb_pod_output.contains("Pod phase Failed") ) {
+            error("APB test failed.")
         }
     }
 }
