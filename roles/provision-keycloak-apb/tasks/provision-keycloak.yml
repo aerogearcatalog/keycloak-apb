@@ -14,13 +14,11 @@
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
-      service: keycloak
-      name: keycloak
-      mobile: enabled
+      service: '{{ keycloak_service_name }}'
     replicas: 1
     spec_template_metadata_labels:
       app: keycloak
-      service: keycloak
+      name: '{{ keycloak_service_name }}'
     volumes:
     - name: keycloak-metrics
       persistent_volume_claim:
@@ -65,13 +63,8 @@
     annotations:
       # this only works with the custom JAR (SPI impl) https://github.com/aerogear/keycloak-metrics-spi
       org.aerogear.metrics/plain_endpoint:  /auth/realms/master/metrics
-    labels:
-      app: keycloak
-      service: keycloak
-      mobile: enabled
     selector:
-      app: keycloak
-      service: keycloak
+      name: '{{ keycloak_service_name }}'
     ports:
     - name: web
       port: 80
@@ -83,9 +76,9 @@
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
-      service: keycloak
+      service: '{{ keycloak_service_name }}'
       mobile: enabled
-    to_name: keycloak
+    to_name: '{{ keycloak_service_name }}'
     spec_port_target_port: web
   when: keycloak_protocol == 'http'
 
@@ -95,16 +88,16 @@
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
-      service: keycloak
+      service: '{{ keycloak_service_name }}'
       mobile: enabled
     tls_termination: edge
     tls_insecure_edge_termination_policy: Redirect
-    to_name: keycloak
+    to_name: '{{ keycloak_service_name }}'
     spec_port_target_port: web
   when: keycloak_protocol == 'https'
 
 - name: "Retrieve route to keycloak"
-  shell: "oc get routes keycloak -n '{{ namespace }}' -o jsonpath='{.spec.host}'"
+  shell: "oc get routes/{{ keycloak_route_name }} -n '{{ namespace }}' -o jsonpath='{.spec.host}'"
   register: keycloak_route
 
 - name: "Copy keycloak-metrics-spi jar into temp directory"
@@ -126,15 +119,6 @@
   until: copy_jar.rc == 0
   delay: 5
 
-- name: Encode admin user credentials
-  asb_encode_binding:
-    fields:
-      USERID: "{{ ADMIN_USERNAME }}"
-      USERNAME: "{{ ADMIN_USERNAME }}"
-      PASSWORD: "{{ ADMIN_PASSWORD }}"
-      USE_SHARED_SERVICE: "{{ USE_SHARED_SERVICE }}"
-  when: encode_asb_binding
-
 - name: "Create keycloak secret template"
   template:
     src: secret.yml.j2
@@ -145,3 +129,27 @@
 
 - name: "Delete secret template file"
   file: path=/tmp/secret.yaml state=absent
+
+- name: Encode APB provision credentials
+  asb_encode_binding:
+    fields:
+      USERID: "{{ ADMIN_USERNAME }}"
+      USERNAME: "{{ ADMIN_USERNAME }}"
+      PASSWORD: "{{ ADMIN_PASSWORD }}"
+      LOGIN_REALM: "{{ keycloak_admin_realm_name }}"
+      REALM: "{{ KEYCLOAK_REALM }}"
+      URI: "{{ KEYCLOAK_HOST }}"
+  when: encode_asb_binding
+
+- name: Populate APB provision credentials
+  set_fact:
+    _apb_provision_creds: "{{ _apb_provision_creds|default({}) | combine( {item.name: item.value} ) }}"
+  with_items:
+    - {name: USERID, value: "{{ ADMIN_USERNAME }}"}
+    - {name: USERNAME, value: "{{ ADMIN_USERNAME }}"}
+    - {name: PASSWORD, value: "{{ ADMIN_PASSWORD }}"}
+    - {name: LOGIN_REALM, value: "{{ keycloak_admin_realm_name }}"}
+    - {name: REALM, value: "{{ KEYCLOAK_REALM }}"}
+    - {name: URI, value: "{{ KEYCLOAK_HOST }}"}
+  when: not encode_asb_binding
+  no_log: yes

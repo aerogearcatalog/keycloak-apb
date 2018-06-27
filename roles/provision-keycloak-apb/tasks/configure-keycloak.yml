@@ -1,5 +1,5 @@
 ---
-- name: "Generate keycloak auth token"
+- name: Generate keycloak auth token for {{ ADMIN_USERNAME }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
     method: POST
@@ -22,7 +22,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: [200, 404]
     return_content: yes
   register: keycloak_realm_exists
@@ -35,7 +35,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
   when: keycloak_realm_exists.status == 404
 

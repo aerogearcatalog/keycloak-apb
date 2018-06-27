@@ -9,6 +9,11 @@
       template.openshift.io/expose-username: "{.data['database-user']}"
       template.openshift.io/expose-password: "{.data['database-password']}"
       template.openshift.io/expose-database_name: "{.data['database-name']}"
+    labels:
+      name: '{{ postgres_secret_name }}'
+      serviceName: "{{ postgres_service_name }}"
+      serviceInstanceID: '{{ _apb_service_instance_id }}'
+      mobile: enable
     string_data:
       database-user: 'keycloakpostgres'
       database-password: '{{ gen_password.stdout }}'

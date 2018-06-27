@@ -1,59 +1,32 @@
 ---
-# TODO when openshift/ansible-service-broker#818 we should get secrets from _apb_provision_creds
-- set_fact:
-    kc_namespace_configmap: "oc get configmaps/{{ keycloak_configmap_name }} --namespace={{ namespace }}"
-    kc_namespace_secret: "oc get secrets --namespace={{ namespace }}"
-    
-- name: Get Keycloak URI from configmap
-  shell: "{{ kc_namespace_configmap }} -o jsonpath={.data.uri}"
-  register: kc_configmap_uri
-
-- name: Get the client service realm
-  shell: "{{ kc_namespace_configmap }} -o jsonpath={.data.realm}"
-  register: kc_configmap_realm
-
-- name: Get the user id
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userId} | base64 --decode"
-  register: kcdev_userid
-
-- name: Get the username
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userName} | base64 --decode"
-  register: kcdev_username
-
-- name: Get the password
-  shell: "{{ kc_namespace_secret }} -o jsonpath={.items[*].data.userPasswd} | base64 --decode"
-  register: kcdev_password
-
-- name: Generate KeyCloak auth token
+- name: Generate keycloak auth token for {{ _apb_provision_creds.USERNAME }}
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/realms/{{ kc_configmap_realm.stdout }}/protocol/openid-connect/token"
+    url: "{{ _apb_provision_creds.URI }}/auth/realms/{{ _apb_provision_creds.LOGIN_REALM }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ kcdev_username.stdout }}&password={{ kcdev_password.stdout }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ _apb_provision_creds.USERNAME }}&password={{ _apb_provision_creds.PASSWORD }}&grant_type=password"
     validate_certs: no
-  register: kc_auth_response
+  register: keycloak_auth_response
   retries: 20
   delay: 2
-  until: kc_auth_response.status == 503 or
-         kc_auth_response.status in [200, 401, 403]
+  until: keycloak_auth_response.status == 503 or
+         keycloak_auth_response.status in [200, 401, 403]
   ignore_errors: yes
 
 - name: Fail due to invalid credentials
   fail: msg="Failed to get access token due to invalid credentials"
-  when: kc_auth_response.status == 401
+  when: keycloak_auth_response.status == 401
 
 - name: Fail due to lack of authorization
-  fail: msg="Failed to get access token. The user {{ kcdev_username.stdout }} is unauthorized to perform this action"
-  when: kc_auth_response.status == 403
+  fail: msg="Failed to get access token. The user {{ _apb_provision_creds.USERNAME }} is unauthorized to perform this action"
+  when: keycloak_auth_response.status == 403
 
-- name: Delete {{ kcdev_username.stdout }} user in realm {{ kc_configmap_realm.stdout }}
+- name: Delete {{ _apb_provision_creds.USERNAME }} user in realm {{ _apb_provision_creds.REALM }}
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ kc_configmap_realm.stdout }}/users/{{ item }}"
+    url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}/users/{{ _apb_provision_creds.USERID }}"
     method: DELETE
     validate_certs: no
     headers:
-      Authorization: "bearer {{ kc_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204, 404
     return_content: yes
-  when: kc_auth_response.status == 200
-  with_items:
-    - "{{ kcdev_userid.stdout }}"
+  when: keycloak_auth_response.status == 200

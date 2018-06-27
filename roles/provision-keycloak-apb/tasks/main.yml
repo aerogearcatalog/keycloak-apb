@@ -1,20 +1,12 @@
 - block:
   - include_tasks: provision-postgres.yml
-    when:
-      - POSTGRESQL_EPHEMERAL is undefined or
-        not POSTGRESQL_EPHEMERAL
-
-  - include_tasks: provision-postgres-ephemeral.yml
-    when:
-      - POSTGRESQL_EPHEMERAL is defined or
-        POSTGRESQL_EPHEMERAL
-
   - include_tasks: provision-keycloak.yml
   - include_tasks: configure-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
     KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
-  when: not USE_SHARED_SERVICE
+  when: USE_SHARED_SERVICE is undefined or
+        not USE_SHARED_SERVICE
 
 - block:
   - include_tasks: configure-keycloak.yml
@@ -23,7 +15,8 @@
     KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
     KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
   when:
-    - USE_SHARED_SERVICE
+    - USE_SHARED_SERVICE is defined and
+      USE_SHARED_SERVICE
     - SHARED_HOST is defined
 
 - include_role:
