@@ -79,26 +79,43 @@
   when: not USE_SHARED_SERVICE
 
 - block:
-  - name: Test|Check that keycloak {{ keycloak_configmap_realm.stdout }} realm exists
+  - name: Generate keycloak auth token for {{ ADMIN_USERNAME }}
     uri:
-      url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ keycloak_configmap_realm.stdout }}"
+      url: "{{ _apb_provision_creds.URI }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
+      method: POST
+      body: "client_id=admin-cli&username={{ ADMIN_USERNAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+      validate_certs: no
+    register: keycloak_auth_response
+    retries: 20
+    delay: 2
+    until: keycloak_auth_response.status == 503 or
+           keycloak_auth_response.status in [200, 401, 403]
+    ignore_errors: yes
+
+  - debug:
+      var: keycloak_auth_response
+      verbosity: 2
+
+  - name: Test|Check that keycloak {{ _apb_provision_creds.REALM }} realm exists
+    uri:
+      url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}"
       method: GET
       validate_certs: no
       body_format: json
       headers:
-        Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+        Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
       status_code: [200]
       return_content: yes
     register: keycloak_realm_exists
 
-  - name: Test|Check that keycloak {{ KCDEV_USERNAME }} user exists
+  - name: Test|Check that keycloak {{ _apb_provision_creds.USERNAME }} user exists
     uri:
-      url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ keycloak_configmap_realm.stdout }}/users/{{ KCDEV_USERID }}"
+      url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}/users/{{ _apb_provision_creds.USERID }}"
       method: GET
       validate_certs: no
       body_format: json
       headers:
-        Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+        Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
       status_code: [404]
       return_content: yes
     register: keycloak_user_exists

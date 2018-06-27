@@ -9,17 +9,9 @@
   register: kc_secret
   failed_when: keycloak_secret_name not in kc_secret.stdout
 
-- name: Test|Get Keycloak URI from configmap
-  shell: "oc get {{ kc_configmap.stdout }} -o jsonpath='{.data.uri}'"
-  register: kc_configmap_uri
-
-- name: Test|Retrieve keycloak realm
-  shell: "oc get {{ kc_configmap.stdout }} -o jsonpath={.data.realm}"
-  register: keycloak_configmap_realm
-
 - name: Test|Test the Keycloak URI
   uri:
-    url: "{{ kc_configmap_uri.stdout }}"
+    url: "{{ _apb_provision_creds.URI }}"
     return_content: yes
     validate_certs: no
   register: webpage
@@ -29,7 +21,7 @@
 
 - name: Test|Check that the keycloak login webpage is accessible
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/"
+    url: "{{ _apb_provision_creds.URI }}/auth/"
     return_content: yes
     validate_certs: no
   register: webpage
@@ -39,7 +31,7 @@
 
 - name: Test|Check that the metrics endpoint works
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/realms/master/metrics"
+    url: "{{ _apb_provision_creds.URI }}/auth/realms/master/metrics"
     return_content: yes
     validate_certs: no
   register: webpage
@@ -47,39 +39,44 @@
   delay: 20
   until: '"jvm_memory_bytes_used" in webpage.content'
 
-- name: Test|Generate keycloak auth token
+- name: Generate keycloak auth token for {{ _apb_provision_creds.USERNAME }}
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
+    url: "{{ _apb_provision_creds.URI }}/auth/realms/{{ _apb_provision_creds.LOGIN_REALM }}/protocol/openid-connect/token"
     method: POST
-    body: "client_id=admin-cli&username={{ ADMIN_USERNAME }}&password={{ ADMIN_PASSWORD }}&grant_type=password"
+    body: "client_id=admin-cli&username={{ _apb_provision_creds.USERNAME }}&password={{ _apb_provision_creds.PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
-  until: keycloak_auth_response.status == 200
-  retries: 600
+  retries: 20
   delay: 2
+  until: keycloak_auth_response.status == 503 or
+         keycloak_auth_response.status in [200, 401, 403]
+  ignore_errors: yes
 
-- name: Test|Check that keycloak {{ keycloak_configmap_realm.stdout }} realm exists
+- debug:
+    var: keycloak_auth_response
+    verbosity: 2
+
+- name: Test|Check that keycloak {{ _apb_provision_creds.REALM }} realm exists
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ keycloak_configmap_realm.stdout }}"
+    url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}"
     method: GET
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: [200]
     return_content: yes
   register: keycloak_realm_exists
-  when: USE_SHARED_SERVICE
 
-- name: Test|Check that keycloak {{ KCDEV_USERNAME }} user exists
+- name: Test|Check that keycloak {{ _apb_provision_creds.USERNAME }} user exists
   uri:
-    url: "{{ kc_configmap_uri.stdout }}/auth/admin/realms/{{ keycloak_configmap_realm.stdout }}/users/{{ KCDEV_USERID }}"
+    url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}/users/{{ _apb_provision_creds.USERID }}"
     method: GET
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: [200]
     return_content: yes
-  register: keycloak_user_exists
   when: USE_SHARED_SERVICE
+  register: keycloak_user_exists

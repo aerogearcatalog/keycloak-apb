@@ -3,7 +3,7 @@
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
   register: kcdev_password
 
-- name: Generate keycloak {{ ADMIN_USERNAME }} auth token
+- name: Generate keycloak auth token for {{ ADMIN_USERNAME }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ keycloak_admin_realm_name }}/protocol/openid-connect/token"
     method: POST
@@ -27,7 +27,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
   register: kcdev_user_created
 
@@ -39,7 +39,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
 
 - name: Get all available clients in {{ KEYCLOAK_REALM }} realm
@@ -49,7 +49,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 200
   register: kcdev_realm_clients
 
@@ -64,7 +64,7 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 200
   register: kcdev_realm_mgmt_roles
 
@@ -76,10 +76,10 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
 
-- name: Generate keycloak {{ KCDEV_USERNAME }} auth token
+- name: Generate keycloak auth token for {{ KCDEV_USERNAME }}
   uri:
     url: "{{ KEYCLOAK_HOST }}/auth/realms/{{ KEYCLOAK_REALM }}/protocol/openid-connect/token"
     method: POST
@@ -97,28 +97,44 @@
     validate_certs: no
     body_format: json
     headers:
-      Authorization: "bearer {{ kcdev_realm_user_response.json.access_token }}"
+      Authorization: "Bearer {{ kcdev_realm_user_response.json.access_token }}"
     status_code: 200
   register: kcdev_realm_user_whoami
   failed_when: kcdev_realm_user_whoami.json.userId != KCDEV_USERID
-
-- name: Encode {{ KCDEV_USERNAME }} user credentials
-  asb_encode_binding:
-    fields:
-      USERID: "{{ KCDEV_USERID }}"
-      USERNAME: "{{ KCDEV_USERNAME }}"
-      PASSWORD: "{{ KCDEV_PASSWORD }}"
-      USE_SHARED_SERVICE: "{{ USE_SHARED_SERVICE }}"
-  when: encode_asb_binding
 
 - k8s_v1_secret:
     name: "{{ keycloak_secret_name }}"
     namespace: "{{ namespace }}"
     labels:
-      name: keycloak
-      mobile: enabled
-      serviceName: keycloak
+      name: '{{ keycloak_secret_name }}'
+      serviceName: "{{ keycloak_service_name }}"
+      serviceInstanceID: '{{ _apb_service_instance_id }}'
+      mobile: enable
     string_data:
       user_id: "{{ KCDEV_USERID }}"
       user_name: "{{ KCDEV_USERNAME }}"
       user_passwd: "{{ KCDEV_PASSWORD }}"
+
+- name: Encode APB provision credentials
+  asb_encode_binding:
+    fields:
+      USERID: "{{ KCDEV_USERID }}"
+      USERNAME: "{{ KCDEV_USERNAME }}"
+      PASSWORD: "{{ KCDEV_PASSWORD }}"
+      LOGIN_REALM: "{{ KEYCLOAK_REALM }}"
+      REALM: "{{ KEYCLOAK_REALM }}"
+      URI: "{{ KEYCLOAK_HOST }}"
+  when: encode_asb_binding
+
+- name: Populate APB provision credentials
+  set_fact:
+    _apb_provision_creds: "{{ _apb_provision_creds|default({}) | combine( {item.name: item.value} ) }}"
+  with_items:
+    - {name: USERID, value: '{{ KCDEV_USERID }}'}
+    - {name: USERNAME, value: '{{ KCDEV_USERNAME }}'}
+    - {name: PASSWORD, value: '{{ KCDEV_PASSWORD }}'}
+    - {name: LOGIN_REALM, value: '{{ KEYCLOAK_REALM }}'}
+    - {name: REALM, value: '{{ KEYCLOAK_REALM }}'}
+    - {name: URI, value: "{{ KEYCLOAK_HOST }}"}
+  when: not encode_asb_binding
+  no_log: yes

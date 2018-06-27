@@ -1,21 +1,7 @@
 ---
-- name: Retrieve route to keycloak
-  shell: "oc get configmaps/{{keycloak_service_name}} -n {{ namespace }} -o jsonpath={.data.uri}"
-  register: keycloak_uri
-
-- set_fact:
-    CLIENT_CONFIG: "{{ _apb_bind_creds.config | from_json }}"
-
-- set_fact:
-    KEYCLOAK_REALM: "{{ CLIENT_CONFIG.realm }}"
-    KEYCLOAK_URI: "{{ keycloak_uri.stdout }}"
-
-- set_fact:
-    KCADM_REALM: "{{ _apb_provision_creds.USE_SHARED_SERVICE | ternary(KEYCLOAK_REALM,keycloak_admin_realm_name) }}"
-
-- name: Generate keycloak auth token
+- name: Generate keycloak auth token for {{ _apb_provision_creds.USERNAME }}
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/realms/{{ KCADM_REALM }}/protocol/openid-connect/token"
+    url: "{{ _apb_provision_creds.URI }}/auth/realms/{{ _apb_provision_creds.LOGIN_REALM }}/protocol/openid-connect/token"
     method: POST
     body: "client_id=admin-cli&username={{ _apb_provision_creds.USERNAME }}&password={{ _apb_provision_creds.PASSWORD }}&grant_type=password"
     validate_certs: no
@@ -26,14 +12,17 @@
          keycloak_auth_response.status in [200, 401, 403]
   ignore_errors: yes
 
-# Delete Keycloak client
-- name: Delete client {{ _apb_bind_creds.clientId }} in realm {{ KEYCLOAK_REALM }}
+- debug:
+    var: keycloak_auth_response
+    verbosity: 2
+
+- name: Delete client {{ _apb_bind_creds.clientId }} in realm {{ _apb_provision_creds.REALM }}
   uri:
-    url: "{{ KEYCLOAK_URI }}/auth/admin/realms/{{ KEYCLOAK_REALM }}/clients/{{ _apb_bind_creds.id }}"
+    url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}/clients/{{ _apb_bind_creds.id }}"
     method: DELETE
     validate_certs: no
     headers:
-      Authorization: "bearer {{ keycloak_auth_response.json.access_token }}"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 204
     return_content: yes
   when: keycloak_auth_response.status != 503
@@ -46,17 +35,17 @@
     state: absent
 
 - set_fact:
-    realm_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm"
-    uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/uri"
-    realm_uri_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm-uri"
-    public_client_annotation: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/public-client"
+    REALM_ANNOTATION: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm"
+    URI_ANNOTATION: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/uri"
+    REALM_URI_ANNOTATION: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/realm-uri"
+    PUBLIC_CLIENT_ANNOTATION: "org.aerogear.binding.{{ _apb_bind_creds.keycloakName }}/public-client"
 
 # Remove annotation from mobile client 
 - name: Remove annotations from client {{ _apb_bind_creds.clientName }}
   shell: "oc annotate mobileclient {{ _apb_bind_creds.clientName }} {{ item }}- -n {{ namespace }}"
   ignore_errors: yes
   with_items:
-    - "{{ realm_annotation }}"
-    - "{{ uri_annotation }}"
-    - "{{ realm_uri_annotation }}"
-    - "{{ public_client_annotation }}"
+    - "{{ REALM_ANNOTATION }}"
+    - "{{ URI_ANNOTATION }}"
+    - "{{ REALM_URI_ANNOTATION }}"
+    - "{{ PUBLIC_CLIENT_ANNOTATION }}"

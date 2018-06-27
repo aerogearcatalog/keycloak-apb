@@ -5,68 +5,105 @@
   connection: local
   vars_files:
   - /opt/ansible/vars/main.yml
+  - /opt/ansible/vars/test.yml
 
   roles:
   - role: ansible.kubernetes-modules
     install_python_requirements: no
   - role: ansibleplaybookbundle.asb-modules
   post_tasks:
-  - name: Load default variables for testing
-    include_vars: /opt/ansible/roles/test-keycloak-apb/vars/main.yml
   - name: Create project for namespace
     openshift_v1_project:
       name: '{{ namespace }}'
-
   - block: # provision origin
     - include_role: name=provision-keycloak-apb
       vars:
         CUSTOM_REALM_NAME: 'TOrigin'
-        USE_SHARED_SERVICE: False
-        keycloak_configmap_name: 'keycloak-torigin'
-        keycloak_secret_name: 'keycloak-torigin'
     - include_role: name=test-keycloak-apb tasks_from=provision
+    - block: # bind public client
+      - include_role: name=bind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=bind
       vars:
-        CUSTOM_REALM_NAME: 'TOrigin'
-        USE_SHARED_SERVICE: False
-        keycloak_configmap_name: 'keycloak-torigin'
-        keycloak_secret_name: 'keycloak-torigin'
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: public
+#    - pause: minutes=1
+    - block: # unbind public client
+      - include_role: name=unbind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=unbind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: public
+    - block: # bind bearer client
+      - include_role: name=bind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=bind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: bearer
+#    - pause: minutes=1
+    - block: # unbind bearer client
+      - include_role: name=unbind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=unbind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: bearer
+    vars:
+      USE_SHARED_SERVICE: False
+      keycloak_service_name: 'keycloak-torigin'
+      keycloak_configmap_name: 'keycloak-torigin'
+      keycloak_secret_name: 'keycloak-torigin'
 
   - block: # provision shared
     - include_role: name=provision-keycloak-apb
       vars:
+        CUSTOM_REALM_NAME: 'TShared'
         SHARED_HOST: '{{ keycloak_protocol }}://{{ keycloak_route.stdout }}'
-        CUSTOM_REALM_NAME: 'TShared'
-        USE_SHARED_SERVICE: True
-        keycloak_configmap_name: 'keycloak-tshared'
-        keycloak_secret_name: 'keycloak-tshared'
     - include_role: name=test-keycloak-apb tasks_from=provision
+
+    - block: # bind public client
+      - include_role: name=bind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=bind
       vars:
-        CUSTOM_REALM_NAME: 'TShared'
-        USE_SHARED_SERVICE: True
-        keycloak_configmap_name: 'keycloak-tshared'
-        keycloak_secret_name: 'keycloak-tshared'
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: public
+#    - pause: minutes=1
+    - block: # unbind public client
+      - include_role: name=unbind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=unbind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: public
+    - block: # bind bearer client
+      - include_role: name=bind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=bind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: bearer
+#    - pause: minutes=1
+    - block: # unbind bearer client
+      - include_role: name=unbind-keycloak-apb
+      - include_role: name=test-keycloak-apb tasks_from=unbind
+      vars:
+        CLIENT_ID: tmyclient-app
+        CLIENT_TYPE: bearer
+    vars:
+      USE_SHARED_SERVICE: True
+      keycloak_service_name: 'keycloak-tshared'
+      keycloak_configmap_name: 'keycloak-tshared'
+      keycloak_secret_name: 'keycloak-tshared'
 
   - block: # deprovision shared
     - include_role: name=deprovision-keycloak-apb
-      vars:
-        USE_SHARED_SERVICE: True
-        keycloak_configmap_name: 'keycloak-tshared'
-        keycloak_secret_name: 'keycloak-tshared'
     - include_role: name=test-keycloak-apb tasks_from=deprovision
-      vars:
-        USE_SHARED_SERVICE: True
-        keycloak_configmap_name: 'keycloak-tshared'
-        keycloak_secret_name: 'keycloak-tshared'
+    vars:
+      USE_SHARED_SERVICE: True
+      keycloak_configmap_name: 'keycloak-tshared'
+      keycloak_secret_name: 'keycloak-tshared'
 
   - block: # deprovision origin
     - include_role: name=deprovision-keycloak-apb
-      vars:
-        USE_SHARED_SERVICE: False
-        keycloak_configmap_name: 'keycloak-torigin'
-        keycloak_secret_name: 'keycloak-torigin'
     - include_role: name=test-keycloak-apb tasks_from=deprovision
-      vars:
-        USE_SHARED_SERVICE: False
-        keycloak_configmap_name: 'keycloak-torigin'
-        keycloak_secret_name: 'keycloak-torigin'
+    vars:
+      USE_SHARED_SERVICE: False
+      keycloak_configmap_name: 'keycloak-torigin'
+      keycloak_secret_name: 'keycloak-torigin'
 
