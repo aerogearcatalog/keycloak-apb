@@ -1,13 +1,13 @@
 version: 1.0
 name: keycloak-apb
-description: Keycloak - Open Source Identity and Access Management
+description: Identity Management - Identity and Access Management
 bindable: True
 async: required
 tags: 
   - mobile-service
   - mobile-client-enabled
 metadata:
-  displayName: Keycloak
+  displayName: Identity Management
   imageUrl: "https://pbs.twimg.com/profile_images/702119821979344897/oAC05cEB_400x400.png"
   documentationUrl: "http://www.keycloak.org/documentation.html"
   providerDisplayName: "Red Hat, Inc."
