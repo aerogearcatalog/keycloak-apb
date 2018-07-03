@@ -41,6 +41,10 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    - name: KEYCLOAK_OPERATING_MODE
+      required: False
+      type: string
+      title: Keycloak operating mode - https://www.keycloak.org/docs/3.0/server_installation/topics/operating-mode.html
     - name: CUSTOM_REALM_NAME
       required: False
       type: string

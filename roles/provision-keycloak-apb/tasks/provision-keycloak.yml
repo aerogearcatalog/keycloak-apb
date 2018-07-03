@@ -47,6 +47,8 @@
         value: '{{ ADMIN_USERNAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
+      - name: KEYCLOAK_OPERATING_MODE
+        value: '{{ KEYCLOAK_OPERATING_MODE }}'
       - name: PROXY_ADDRESS_FORWARDING
         value: 'true'
       - name: POSTGRES_USER
