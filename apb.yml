@@ -14,10 +14,10 @@ metadata:
   dependencies:
     - "docker.io/jboss/keycloak-openshift:3.4.3.Final"
     - "docker.io/centos/postgresql-96-centos7:9.6"
-  sdk-docs-android: "https://docs.aerogear.org/android-sdk/latest/getting-started/auth.html"
-  sdk-docs-cordova: "https://github.com/aerogear/aerogear-android-sdk/blob/master/docs/modules/ROOT/pages/auth.adoc"
-  sdk-docs-ios: "https://github.com/aerogear/aerogear-android-sdk/blob/master/docs/modules/ROOT/pages/auth.adoc"
-  sdk-docs-xamarin: "https://github.com/aerogear/aerogear-android-sdk/blob/master/docs/modules/ROOT/pages/auth.adoc"
+  sdk-docs-android: "https://docs.aerogear.org/external/apb/idm/android.html"
+  sdk-docs-cordova: "https://docs.aerogear.org/external/apb/idm/cordova.html"
+  sdk-docs-ios: "https://docs.aerogear.org/external/apb/idm/ios.html"
+  sdk-docs-xamarin: "https://docs.aerogear.org/external/apb/idm/xamarin.html"
   serviceName: keycloak
 plans:
   - name: default
