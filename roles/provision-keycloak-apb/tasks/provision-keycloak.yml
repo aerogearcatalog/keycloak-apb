@@ -3,7 +3,7 @@
     name: '{{ keycloak_pv_claim_name }}'
     state: present
     namespace: '{{ namespace }}'
-    access_modes: [ReadWriteMany]
+    access_modes: [ReadWriteOnce, ReadWriteMany]
     spec_resources_requests:
       storage: 10M
   register: create_volume_claim
