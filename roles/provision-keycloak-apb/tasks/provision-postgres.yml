@@ -39,7 +39,7 @@
     name: '{{ postgres_service_name }}'
     namespace: '{{ namespace }}'
     access_modes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources_requests:
       storage: "1Gi"
 
