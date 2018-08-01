@@ -25,7 +25,9 @@
       HTTPS_SECRET=sso-app-secret 
       HTTPS_KEYSTORE=keystore.jks 
       HTTPS_NAME=jboss
-      HTTPS_PASSWORD=mykeystorepass"
+      HTTPS_PASSWORD=mykeystorepass
+      SSO_ADMIN_USERNAME={{ADMIN_USERNAME}}
+      SSO_ADMIN_PASSWORD={{ADMIN_PASSWORD}}"
 
 - debug: var=PARAMS
 
