@@ -1,3 +1,5 @@
+
+
 - name: copy templates
   copy:
     src: '{{ item.src }}'
@@ -6,70 +8,27 @@
     - {src: sso-app-secret.json , dest: /tmp/sso-app-secret.json}
     - {src: sso72-postgresql-persistent.json , dest: /tmp/sso72-postgresql-persistent.json}
 
-
-
 - name: create secret
   shell: oc create -n {{ namespace }} -f /tmp/sso-app-secret.json
   register: out
   failed_when: out.rc != 0 and out.stderr.find("AlreadyExists") == -1
 
-    # - name: APPLICATION_NAME
-    #   required: True
-    #   default: keycloak
-    #   pattern: "[a-z]([-a-z0-9]*[a-z0-9])?"
-    #   type: string
-    #   title: Keycloak application name, every deployed instance in the same namespace needs to have unique name.
-    # - name: HTTPS_SECRET
-    #   required: True
-    #   default: sso-app-secret
-    #   type: string
-    #   title: The name of the secret to use to expose RH-SSO/Keycloak over HTTPS.
-    # - name: HTTPS_KEYSTORE
-    #   required: True
-    #   default: keystore.jks
-    #   type: string
-    #   title: The name of the keystore to use to expose RH-SSO/Keycloak over HTTPS.
-    # - name: HTTPS_NAME
-    #   required: True
-    #   default: jboss
-    #   type: string
-    #   title: The alias of the keys/certificate to use to expose RH-SSO/Keycloak over HTTPS. 
-    # - name: HTTPS_PASSWORD
-    #   required: True
-    #   default: mykeystorepass
-    #   type: string
-    #   title: The password of the keystore to use to expose RH-SSO/Keycloak over HTTPS. 
+- name: generate random name suffix
+  shell:  openssl rand -hex 3
+  register: name_suffix
 
+- set_fact: 
+    name_suffix: "{{ name_suffix.stdout }}"
 
-# - set_fact:
-#     PARAMS: "APPLICATION_NAME={{ APPLICATION_NAME }}"
+- set_fact:
+    PARAMS: "APPLICATION_NAME=keycloak-{{ name_suffix }} 
+      HTTPS_SECRET=sso-app-secret 
+      HTTPS_KEYSTORE=keystore.jks 
+      HTTPS_NAME=jboss
+      HTTPS_PASSWORD=mykeystorepass"
 
-# - name: add HTTPS_SECRET
-#   when: HTTPS_SECRET is defined
-#   set_fact:
-#     PARAMS: "{{ PARAMS + ' ' + 'HTTPS_SECRET=' + HTTPS_SECRET}}"
-
-# - name: add HTTPS_KEYSTORE
-#   when: HTTPS_KEYSTORE is defined
-#   set_fact:
-#     PARAMS: "{{ PARAMS + ' ' + 'HTTPS_KEYSTORE=' + HTTPS_KEYSTORE}}"
-
-# - name: add HTTPS_NAME
-#   when: HTTPS_NAME is defined
-#   set_fact:
-#     PARAMS: "{{ PARAMS + ' ' + 'HTTPS_NAME=' + HTTPS_NAME}}"
-
-# - name: add HTTPS_PASSWORD
-#   when: HTTPS_PASSWORD is defined
-#   set_fact:
-#     PARAMS: "{{ PARAMS + ' ' + 'HTTPS_PASSWORD=' + HTTPS_PASSWORD}}"
+- debug: var=PARAMS
 
 - name: provision with HTTPS
-  shell: |
-    oc process -f /tmp/sso72-postgresql-persistent.json -p 
-    APPLICATION_NAME={{ APPLICATION_NAME }} 
-    HTTPS_SECRET={{HTTPS_SECRET}} 
-    HTTPS_KEYSTORE={{HTTPS_KEYSTORE}}
-    HTTPS_NAME={{HTTPS_NAME}} 
-    HTTPS_PASSWORD={{HTTPS_PASSWORD}} | oc create -n {{ namespace }} -f -
+  shell: oc process -f /tmp/sso72-postgresql-persistent.json -p {{ PARAMS }} | oc create -n {{ namespace }} -f -
 
