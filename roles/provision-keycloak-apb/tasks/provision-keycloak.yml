@@ -139,26 +139,48 @@
 - name: "Delete secret template file"
   file: path=/tmp/secret.yaml state=absent
 
-- name: Encode APB provision credentials
-  asb_encode_binding:
-    fields:
-      USERID: "{{ ADMIN_USERNAME }}"
-      USERNAME: "{{ ADMIN_USERNAME }}"
-      PASSWORD: "{{ ADMIN_PASSWORD }}"
-      LOGIN_REALM: "{{ keycloak_admin_realm_name }}"
-      REALM: "{{ KEYCLOAK_REALM }}"
-      URI: "{{ KEYCLOAK_HOST }}"
-  when: encode_asb_binding
+- block:
+  - name: Encode APB provision credentials
+    asb_encode_binding:
+      fields:
+        USERID: "{{ ADMIN_USERNAME }}"
+        USERNAME: "{{ ADMIN_USERNAME }}"
+        PASSWORD: "{{ ADMIN_PASSWORD }}"
+        LOGIN_REALM: "{{ keycloak_admin_realm_name }}"
+        REALM: "{{ KEYCLOAK_REALM }}"
+        URI: "{{ KEYCLOAK_HOST }}"
+    when: encode_asb_binding
 
-- name: Populate APB provision credentials
-  set_fact:
-    _apb_provision_creds: "{{ _apb_provision_creds|default({}) | combine( {item.name: item.value} ) }}"
-  with_items:
-    - {name: USERID, value: "{{ ADMIN_USERNAME }}"}
-    - {name: USERNAME, value: "{{ ADMIN_USERNAME }}"}
-    - {name: PASSWORD, value: "{{ ADMIN_PASSWORD }}"}
-    - {name: LOGIN_REALM, value: "{{ keycloak_admin_realm_name }}"}
-    - {name: REALM, value: "{{ KEYCLOAK_REALM }}"}
-    - {name: URI, value: "{{ KEYCLOAK_HOST }}"}
-  when: not encode_asb_binding
-  no_log: yes
+  - name: Populate APB provision credentials
+    set_fact:
+      _apb_provision_creds: "{{ _apb_provision_creds|default({}) | combine( {item.name: item.value} ) }}"
+    with_items:
+      - {name: USERID, value: "{{ ADMIN_USERNAME }}"}
+      - {name: USERNAME, value: "{{ ADMIN_USERNAME }}"}
+      - {name: PASSWORD, value: "{{ ADMIN_PASSWORD }}"}
+      - {name: LOGIN_REALM, value: "{{ keycloak_admin_realm_name }}"}
+      - {name: REALM, value: "{{ KEYCLOAK_REALM }}"}
+      - {name: URI, value: "{{ KEYCLOAK_HOST }}"}
+    when: not encode_asb_binding
+    no_log: yes
+  when: _apb_plan_id == 'default'
+
+- block:
+  - name: Encode APB provision credentials
+    asb_encode_binding:
+      fields:
+        USERNAME: "{{ ADMIN_USERNAME }}"
+        PASSWORD: "{{ ADMIN_PASSWORD }}"
+        URI: "{{ KEYCLOAK_HOST }}"
+    when: encode_asb_binding
+
+  - name: Populate APB provision credentials
+    set_fact:
+      _apb_provision_creds: "{{ _apb_provision_creds|default({}) | combine( {item.name: item.value} ) }}"
+    with_items:
+      - {name: USERNAME, value: "{{ ADMIN_USERNAME }}"}
+      - {name: PASSWORD, value: "{{ ADMIN_PASSWORD }}"}
+      - {name: URI, value: "{{ KEYCLOAK_HOST }}"}
+    when: not encode_asb_binding
+    no_log: yes
+  when: _apb_plan_id == 'sharedInstance'
