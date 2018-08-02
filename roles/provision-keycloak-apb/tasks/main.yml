@@ -1,28 +1,37 @@
 - block:
   - include_tasks: provision-postgres.yml
   - include_tasks: provision-keycloak.yml
-  - include_tasks: configure-keycloak.yml
   vars:
     KEYCLOAK_HOST: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
-    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
-  when: USE_SHARED_SERVICE is undefined or
-        not USE_SHARED_SERVICE
+  when: _apb_plan_id == 'sharedInstance'
 
 - block:
-  - include_tasks: configure-keycloak.yml
-  - include_tasks: addrealmuser-keycloak.yml
-  vars:
-    KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
-    KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
-  when:
-    - USE_SHARED_SERVICE is defined and
-      USE_SHARED_SERVICE
-    - SHARED_HOST is defined
+  - block:
+    - include_tasks: provision-postgres.yml
+    - include_tasks: provision-keycloak.yml
+    - include_tasks: configure-keycloak.yml
+    vars:
+      KEYCLOAK_HOST: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
+      KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
+    when: USE_SHARED_SERVICE is undefined or
+          not USE_SHARED_SERVICE
 
-- include_role:
-    name: oc-patch-file-to-configmap
-  vars:
-    file_contents: "{{ dashboard_file_contents }}"
-    filename: "{{ dashboard_filename }}"
-    configmap: "{{ dashboards_configmap }}"
-    namespace: "{{ namespace }}"
+  - block:
+    - include_tasks: configure-keycloak.yml
+    - include_tasks: addrealmuser-keycloak.yml
+    vars:
+      KEYCLOAK_HOST: "{{ SHARED_HOST | mandatory | regex_replace('/$') }}"
+      KEYCLOAK_REALM: "{{ CUSTOM_REALM_NAME|default(namespace, True) }}"
+    when:
+      - USE_SHARED_SERVICE is defined and
+        USE_SHARED_SERVICE
+      - SHARED_HOST is defined
+
+  - include_role:
+      name: oc-patch-file-to-configmap
+    vars:
+      file_contents: "{{ dashboard_file_contents }}"
+      filename: "{{ dashboard_filename }}"
+      configmap: "{{ dashboards_configmap }}"
+      namespace: "{{ namespace }}"
+  when: _apb_plan_id == 'default'
