@@ -9,9 +9,13 @@
       storage: 10M
   register: create_volume_claim
 
-- name: create keycloak k8s deployment
+- name: get postgres IP
+  shell: oc get service {{ postgres_service_name }} -n {{ namespace }} -o json | jq ".spec.clusterIP" | cut -f2 -d'"'
+  register: postgresIP
+
+- name: 'create keycloak k8s deployment (with {{postgresIP}})'
   k8s_extensions_v1beta1_deployment:
-    name: keycloak
+    name: 'keycloak-{{ TAG }}'
     namespace: '{{ namespace }}'
     labels:
       app: keycloak
@@ -21,9 +25,9 @@
       app: keycloak
       name: '{{ keycloak_service_name }}'
     volumes:
-    - name: keycloak-metrics
+    - name: '{{ keycloak_pv_claim_name }}'
       persistent_volume_claim:
-        claim_name: keycloak-metrics
+        claim_name: '{{ keycloak_pv_claim_name }}'
     containers:
     - env:
       - name: KEYCLOAK_USER
@@ -47,14 +51,18 @@
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-name
+      - name: POSTGRES_PORT_5432_TCP_PORT
+        value: "5432"
+      - name: POSTGRES_PORT_5432_TCP_ADDR
+        value: "{{postgresIP.stdout}}"
       image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
-      name: keycloak
+      name: '{{ keycloak_service_name }}'
       ports:
       - container_port: 8080
         protocol: TCP
       volume_mounts:
       - mount_path: /opt/jboss/keycloak/providers/
-        name: keycloak-metrics
+        name: '{{ keycloak_pv_claim_name }}'
         sub_path: providers/
 
 - name: create keycloak service
@@ -107,7 +115,7 @@
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
 
 - name: Get the name of the keycloak pod
-  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="keycloak")].metadata.name}'
+  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="keycloak-{{ TAG }}")].metadata.name}'
   register: keycloak_pod_name
   retries: 10
   until: '"keycloak" in keycloak_pod_name.stdout'
