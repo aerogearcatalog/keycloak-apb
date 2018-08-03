@@ -1,4 +1,5 @@
 ---
+
 - name: Delete route
   openshift_v1_route:
     name: '{{ keycloak_route_name }}'

@@ -9,4 +9,4 @@
     install_python_requirements: no
   - role: ansibleplaybookbundle.asb-modules
   - role: provision-keycloak-apb
-    playbook_debug: false
+    playbook_debug: true
