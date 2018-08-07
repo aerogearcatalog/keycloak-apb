@@ -13,7 +13,7 @@
   shell: oc get service {{ postgres_service_name }} -n {{ namespace }} -o json | jq ".spec.clusterIP" | cut -f2 -d'"'
   register: postgresIP
 
-- name: 'create keycloak k8s deployment (with {{postgresIP}})'
+- name: 'create keycloak k8s deployment'
   k8s_extensions_v1beta1_deployment:
     name: 'keycloak-{{ TAG }}'
     namespace: '{{ namespace }}'
@@ -113,6 +113,12 @@
   copy:
     src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
     dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
+
+- name: List all pods
+  shell: oc get pods -n '{{ namespace }}' -o json
+  register: pods_list
+
+- debug: var=pods_list
 
 - name: Get the name of the keycloak pod
   shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="keycloak-{{ TAG }}")].metadata.name}'

@@ -1,4 +1,10 @@
 ---
+- hosts: all
+  tasks:
+    - set_fact: 
+        TAG: test-tag
+
+
 - name: Test keycloak-apb
   hosts: localhost
   gather_facts: false
@@ -48,9 +54,6 @@
         CLIENT_TYPE: bearer
     vars:
       USE_SHARED_SERVICE: False
-      keycloak_service_name: 'keycloak-torigin'
-      keycloak_configmap_name: 'keycloak-torigin'
-      keycloak_secret_name: 'keycloak-torigin'
 
   - block: # provision shared
     - include_role: name=provision-keycloak-apb
@@ -104,6 +107,4 @@
     - include_role: name=test-keycloak-apb tasks_from=deprovision
     vars:
       USE_SHARED_SERVICE: False
-      keycloak_configmap_name: 'keycloak-torigin'
-      keycloak_secret_name: 'keycloak-torigin'
 

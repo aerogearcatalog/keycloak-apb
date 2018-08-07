@@ -27,12 +27,24 @@ node ("ocp-slave") {
     }
 
     stage('Watch the logs') {
-        
-        pod_container_id = sh (
-            script: "sleep 30 ; docker ps --filter since=${apb_container_id} | grep 'entrypoint.sh test' | awk '{print \$1}'",
-            returnStdout: true
-        ).trim()
-        
+        timeout(120) {
+            waitUntil {
+                try {
+                    pod_container_id = sh (
+                        script: "docker ps --filter since=${apb_container_id} | grep 'entrypoint.sh test' | awk '{print \$1}'",
+                        returnStdout: true
+                    ).trim()
+                    if (pod_container_id != "") {
+                        return true
+                    } else {
+                        sh "sleep 1"
+                        return false
+                    }
+                } catch (exception) {
+                    return false
+                }
+            }
+        }
         sh "docker logs -f ${pod_container_id}"
     }
     
