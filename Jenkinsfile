@@ -58,7 +58,7 @@ node ("ocp-slave") {
 
         echo apb_pod_output
         
-        if ( apb_pod_output.contains("Pod phase Failed") ) {
+        if ( !apb_pod_output.contains("failed=0") ) {
             error("APB test failed.")
         }
     }
