@@ -1,4 +1,5 @@
 ADMIN_USERNAME: "admin"
 ADMIN_PASSWORD: "admin"
 _apb_service_instance_id: 'dummy_service_instance_id'
+_apb_plan_id: 'default'
 encode_asb_binding: no
