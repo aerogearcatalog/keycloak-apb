@@ -64,3 +64,19 @@ plans:
       type: enum
       enum: ['bearer', 'public']
       default: public
+  - name: sharedInstance
+    description: Deploy a shared Keycloak instance
+    metadata:
+      displayName: Shared Keycloak
+    free: True
+    parameters: 
+    - name: ADMIN_USERNAME
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin username
+    - name: ADMIN_PASSWORD
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin password

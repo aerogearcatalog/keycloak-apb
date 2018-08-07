@@ -29,7 +29,7 @@ node ("ocp-slave") {
     stage('Watch the logs') {
         
         pod_container_id = sh (
-            script: "sleep 30 ; docker ps --filter since=${apb_container_id} | grep 'entrypoint.sh test' | awk '{print \$1}'",
+            script: "sleep 30 ; docker ps -a --filter since=${apb_container_id} | grep 'entrypoint.sh test' | awk '{print \$1}'",
             returnStdout: true
         ).trim()
         
