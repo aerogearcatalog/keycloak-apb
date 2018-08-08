@@ -18,11 +18,11 @@
     name: 'keycloak-{{ TAG }}'
     namespace: '{{ namespace }}'
     labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       service: '{{ keycloak_service_name }}'
     replicas: 1
     spec_template_metadata_labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       name: '{{ keycloak_service_name }}'
     volumes:
     - name: '{{ keycloak_pv_claim_name }}'
@@ -84,7 +84,7 @@
     name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       service: '{{ keycloak_service_name }}'
       mobile: enabled
     to_name: '{{ keycloak_service_name }}'
@@ -96,7 +96,7 @@
     name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       service: '{{ keycloak_service_name }}'
       mobile: enabled
     tls_termination: edge
@@ -121,7 +121,7 @@
 - debug: var=pods_list
 
 - name: Get the name of the keycloak pod
-  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="keycloak-{{ TAG }}")].metadata.name}'
+  shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="{{ keycloak_service_name }}")].metadata.name}'
   register: keycloak_pod_name
   retries: 10
   until: '"keycloak" in keycloak_pod_name.stdout'

@@ -48,10 +48,10 @@
     namespace: '{{ namespace }}'
     replicas: 1
     labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       service: '{{ postgres_service_name }}'
     spec_template_metadata_labels:
-      app: keycloak
+      app: '{{ keycloak_service_name }}'
       name: '{{ postgres_service_name }}'
     containers:
     - name: postgresql
