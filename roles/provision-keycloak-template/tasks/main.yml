@@ -1,0 +1,36 @@
+
+
+- name: copy templates
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - {src: sso-app-secret.json , dest: /tmp/sso-app-secret.json}
+    - {src: sso72-postgresql-persistent.json , dest: /tmp/sso72-postgresql-persistent.json}
+
+- name: create secret
+  shell: oc create -n {{ namespace }} -f /tmp/sso-app-secret.json
+  register: out
+  failed_when: out.rc != 0 and out.stderr.find("AlreadyExists") == -1
+
+- name: generate random name suffix
+  shell:  openssl rand -hex 3
+  register: name_suffix
+
+- set_fact: 
+    name_suffix: "{{ name_suffix.stdout }}"
+
+- set_fact:
+    PARAMS: "APPLICATION_NAME=keycloak-{{ name_suffix }} 
+      HTTPS_SECRET=sso-app-secret 
+      HTTPS_KEYSTORE=keystore.jks 
+      HTTPS_NAME=jboss
+      HTTPS_PASSWORD=mykeystorepass
+      SSO_ADMIN_USERNAME={{ADMIN_USERNAME}}
+      SSO_ADMIN_PASSWORD={{ADMIN_PASSWORD}}"
+
+- debug: var=PARAMS
+
+- name: provision with HTTPS
+  shell: oc process -f /tmp/sso72-postgresql-persistent.json -p {{ PARAMS }} | oc create -n {{ namespace }} -f -
+
