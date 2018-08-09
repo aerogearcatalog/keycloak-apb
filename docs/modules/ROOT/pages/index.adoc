@@ -4,4 +4,7 @@ After following the link:/aerogear/latest/minishift_install.inc.html[instruction
 
 == About the {Keycloak} Service
 
+// tag::about-auth[]
 The {Keycloak} service provides authentication and authorization for your mobile app.
+
+// end::about-auth[]
