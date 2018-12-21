@@ -1,0 +1,28 @@
+- name: Check to see if the specified Config Map exists
+  shell: oc get configmap {{ configmap }} -n {{ namespace }}
+  ignore_errors: yes
+  register: check_configmap
+
+- name: Print Warning Message about Config Map not Existing
+  debug:
+    msg: "Warning: Cannot add file {{ filename }} to Config Map {{ configmap }}. Config Map does not exist."
+  when: check_configmap.rc != 0
+
+- block:
+
+  - name: Create appropriate contents from template for 'oc patch' command
+    template:
+      src: oc-patch.json.j2
+      dest: /tmp/oc-patch.json
+
+  - name: Add file to the specified config map
+    shell: oc patch configmap {{ configmap }} -p {{ lookup('file', '/tmp/oc-patch.json') | quote }} -n {{ namespace }}
+    ignore_errors: yes
+    register: oc_patch_result
+
+  - name: Print Debug info about failed oc patch operation
+    debug:
+      var: oc_patch_result
+    when: oc_patch_result.rc != 0
+
+  when: check_configmap.rc == 0
