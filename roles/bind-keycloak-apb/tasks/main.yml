@@ -25,7 +25,7 @@
   register: generated_client_secret
 
 - name: Get keycloak service instance name
-  shell: oc get serviceinstances -n {{ namespace }} -o json | jq '.items[] | select(.spec.externalID=="{{ _apb_service_instance_id }}") | .metadata.name'  | cut -f2 -d'"'
+  shell: oc get serviceinstances -n {{ namespace }} -o jsonpath='{.items[?(@.spec.externalID=="{{ _apb_service_instance_id }}")].metadata.name}'
   register: keycloak_svc_name
 
 - set_fact:
@@ -111,16 +111,16 @@
       name: "{{ keycloak_service_name }}"
       type: "keycloak"
 
-- set_fact: 
+- set_fact:
     REALM_ANNOTATION: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm"
     URI_ANNOTATION: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/uri"
     REALM_URI_ANNOTATION: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/realm-uri"
 
-- set_fact: 
+- set_fact:
     PUBLIC_CLIENT_ANNOTATION: "org.aerogear.binding.{{ KEYCLOAK_NAME }}/public-client"
   when: CLIENT_TYPE == "public"
-   
-# Annotate the mobile client 
+
+# Annotate the mobile client
 - name: Annotate client {{ CLIENT_ID }}
   shell: 'oc annotate mobileclient {{ CLIENT_ID }} {{ item }} --overwrite=true -n {{ namespace }}'
   ignore_errors: yes
