@@ -1,7 +1,7 @@
-FROM ansibleplaybookbundle/apb-base
+FROM openshift3/apb-base:v3.11
 
-LABEL "com.redhat.apb.version"="0.1.0"
-LABEL "com.redhat.apb.spec"=\
+LABEL com.redhat.component="mobile-identity-management" \
+      com.redhat.apb.spec=\
 "dmVyc2lvbjogMS4wCm5hbWU6IGtleWNsb2FrLWFwYgpkZXNjcmlwdGlvbjogSWRlbnRpdHkgTWFu\
 YWdlbWVudCAtIElkZW50aXR5IGFuZCBBY2Nlc3MgTWFuYWdlbWVudApiaW5kYWJsZTogVHJ1ZQph\
 c3luYzogcmVxdWlyZWQKdGFnczoKICAtIG1vYmlsZS1zZXJ2aWNlCiAgLSBtb2JpbGUtY2xpZW50\
@@ -39,8 +39,15 @@ cnM6CiAgICAtIG5hbWU6IENMSUVOVF9JRAogICAgICByZXF1aXJlZDogVHJ1ZQogICAgICB0aXRs\
 ZTogTW9iaWxlIGNsaWVudCBJRC9TZXJ2aWNlIElECiAgICAgIHR5cGU6IHN0cmluZwogICAgLSBu\
 YW1lOiBDTElFTlRfVFlQRQogICAgICByZXF1aXJlZDogVHJ1ZQogICAgICB0aXRsZTogS2V5Y2xv\
 YWsgY2xpZW50IHR5cGUKICAgICAgdHlwZTogZW51bQogICAgICBlbnVtOiBbJ2JlYXJlcicsICdw\
-dWJsaWMnXQogICAgICBkZWZhdWx0OiBwdWJsaWMK"
-
+dWJsaWMnXQogICAgICBkZWZhdWx0OiBwdWJsaWMK" \
+      name="mobile/mobile-identity-management-apb" \
+      io.k8s.display-name="Mobile Identity Management APB" \
+      io.k8s.description="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
+      description="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
+      summary="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
+      usage="This image is used by the Automation Broker in OpenShift to provision Mobile Identity Management" \
+      maintainer="Red Hat Mobile team" \
+      version="1.0.0"
 
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
