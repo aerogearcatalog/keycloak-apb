@@ -55,7 +55,7 @@
         value: "5432"
       - name: POSTGRES_PORT_5432_TCP_ADDR
         value: "{{postgresIP.stdout}}"
-      image: 'docker.io/jboss/keycloak-openshift:{{ keycloak_image_tag }}'
+      image: '{{keycloak_image }}:{{ keycloak_image_tag }}'
       name: '{{ keycloak_service_name }}'
       ports:
       - container_port: 8080
