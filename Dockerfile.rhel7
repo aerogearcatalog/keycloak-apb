@@ -1,6 +1,6 @@
 FROM openshift3/apb-base:v3.11
 
-LABEL com.redhat.component="mobile-identity-management" \
+LABEL com.redhat.component="mobile-identity-management-apb" \
       com.redhat.apb.spec=\
 "dmVyc2lvbjogMS4wCm5hbWU6IGtleWNsb2FrLWFwYgpkZXNjcmlwdGlvbjogSWRlbnRpdHkgTWFu\
 YWdlbWVudCAtIElkZW50aXR5IGFuZCBBY2Nlc3MgTWFuYWdlbWVudApiaW5kYWJsZTogVHJ1ZQph\
