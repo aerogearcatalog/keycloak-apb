@@ -796,6 +796,6 @@
     ]
   },
   "timezone": "",
-  "title": "Keycloak Metrics",
+  "title": "IDM Metrics",
   "version": 3
 }
