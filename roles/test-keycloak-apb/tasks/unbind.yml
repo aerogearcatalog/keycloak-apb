@@ -2,7 +2,7 @@
 - name: Test|Check that {{ keycloak_secret_name }}-{{ CLIENT_ID | lower }}-{{ CLIENT_TYPE }} secret has been removed
   shell: "oc get secrets/{{ keycloak_secret_name }}-{{ CLIENT_ID | lower }}-{{ CLIENT_TYPE }} -o name 2>&1"
   register: result
-  retries: 50
+  retries: 10
   delay: 10
   failed_when:
     - '"not found" not in result.stdout'
@@ -15,7 +15,7 @@
     body: "client_id=admin-cli&username={{ _apb_provision_creds.USERNAME }}&password={{ _apb_provision_creds.PASSWORD }}&grant_type=password"
     validate_certs: no
   register: keycloak_auth_response
-  retries: 20
+  retries: 10
   delay: 2
   until: keycloak_auth_response.status == 503 or
          keycloak_auth_response.status in [200, 401, 403]

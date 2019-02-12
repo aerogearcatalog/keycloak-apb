@@ -15,14 +15,14 @@
 
 - name: 'create keycloak k8s deployment'
   k8s_extensions_v1beta1_deployment:
-    name: 'keycloak-{{ TAG }}'
+    name: '{{ keycloak_service_name }}'
     namespace: '{{ namespace }}'
     labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       service: '{{ keycloak_service_name }}'
     replicas: 1
     spec_template_metadata_labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       name: '{{ keycloak_service_name }}'
     volumes:
     - name: '{{ keycloak_pv_claim_name }}'
@@ -84,7 +84,7 @@
     name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       service: '{{ keycloak_service_name }}'
       mobile: enabled
     to_name: '{{ keycloak_service_name }}'
@@ -96,7 +96,7 @@
     name: '{{ keycloak_route_name }}'
     namespace: '{{ namespace }}'
     labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       service: '{{ keycloak_service_name }}'
       mobile: enabled
     tls_termination: edge

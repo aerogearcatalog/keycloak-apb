@@ -1,20 +1,4 @@
 ---
-- name: get tag
-  shell: echo '{{ vars._apb_provision_creds.URI }}' | cut -f2 -d'-'
-  register: tag_out
-
-- set_fact:
-    TAG: "{{ tag_out.stdout }}"
-
-- set_fact:
-    keycloak_service_name: keycloak-{{ TAG }}
-    postgres_service_name: postgres-{{ TAG }}
-    keycloak_route_name: keycloak-{{ TAG }}
-    keycloak_configmap_name: keycloak-{{ TAG }}
-    keycloak_secret_name: keycloak-{{ TAG }}
-    postgres_secret_name: keycloak-postgres-{{ TAG }}
-    keycloak_pv_claim_name: keycloak-metrics-{{ TAG }}
-    postgres_pv_claim_name: postgres-{{ TAG }}
 
 - name: Generate client id
   shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20

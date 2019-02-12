@@ -11,7 +11,7 @@
     validate_certs: no
   register: keycloak_auth_response
   until: keycloak_auth_response.status == 200
-  retries: 600
+  retries: 50
   delay: 2
 
 - set_fact:
@@ -87,7 +87,7 @@
     validate_certs: no
   register: kcdev_realm_user_response
   until: kcdev_realm_user_response.status == 200
-  retries: 600
+  retries: 50
   delay: 2
 
 - name: Get keycloak whoami {{ KCDEV_USERNAME }}

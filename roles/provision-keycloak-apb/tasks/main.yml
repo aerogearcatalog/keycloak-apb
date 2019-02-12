@@ -1,12 +1,4 @@
-- name: generate random name suffix
-  when: TAG is not defined
-  shell:  openssl rand -hex 3
-  register: name_suffix
-
-- set_fact: 
-    TAG: "{{ name_suffix.stdout }}"
-  when: TAG is not defined
-    
+---
 
 - block:
   - include_tasks: provision-postgres.yml
