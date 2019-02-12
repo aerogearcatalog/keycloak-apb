@@ -111,8 +111,8 @@
 
 - name: "Copy keycloak-metrics-spi jar into temp directory"
   copy:
-    src: keycloak-metrics-spi-1.0-SNAPSHOT.jar
-    dest: /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar
+    src: keycloak-metrics-spi.jar
+    dest: /tmp/keycloak-metrics-spi.jar
 
 - name: List all pods
   shell: oc get pods -n '{{ namespace }}' -o json
@@ -128,7 +128,7 @@
   delay: 5
 
 - name: Copy jar into keycloaks metrics
-  shell: oc cp /tmp/keycloak-metrics-spi-1.0-SNAPSHOT.jar {{ namespace }}/{{ keycloak_pod_name.stdout }}:/opt/jboss/keycloak/providers/
+  shell: oc cp /tmp/keycloak-metrics-spi.jar {{ namespace }}/{{ keycloak_pod_name.stdout }}:/opt/jboss/keycloak/providers/
   register: copy_jar
   retries: 60
   until: copy_jar.rc == 0
