@@ -14,3 +14,4 @@
     state: absent
   with_items:
   - '{{ keycloak_configmap_name }}'
+  - '{{ dashboard_filename }}'

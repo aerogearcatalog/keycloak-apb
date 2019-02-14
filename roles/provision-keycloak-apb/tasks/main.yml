@@ -28,3 +28,7 @@
     filename: "{{ dashboard_filename }}"
     configmap: "{{ dashboards_configmap }}"
     namespace: "{{ namespace }}"
+
+- name: "Create {{ dashboard_filename }} configmap if metrics-apb is not provisioned yet"
+  shell: oc create configmap '{{ dashboard_filename }}' --from-file={{ dashboard_filename }}={{ role_path }}/files/{{ dashboard_filename }} -n '{{ namespace }}'
+  when: check_configmap.rc != 0 and encode_asb_binding

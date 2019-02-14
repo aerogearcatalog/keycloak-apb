@@ -52,10 +52,6 @@
          keycloak_auth_response.status in [200, 401, 403]
   ignore_errors: yes
 
-- debug:
-    var: keycloak_auth_response
-    verbosity: 2
-
 - name: Test|Check that keycloak {{ _apb_provision_creds.REALM }} realm exists
   uri:
     url: "{{ _apb_provision_creds.URI }}/auth/admin/realms/{{ _apb_provision_creds.REALM }}"

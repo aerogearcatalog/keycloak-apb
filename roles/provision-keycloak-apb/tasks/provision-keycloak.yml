@@ -118,8 +118,6 @@
   shell: oc get pods -n '{{ namespace }}' -o json
   register: pods_list
 
-- debug: var=pods_list
-
 - name: Get the name of the keycloak pod
   shell: oc get pods -n '{{ namespace }}' -o jsonpath='{.items[?(@.spec.containers[0].name=="{{ keycloak_service_name }}")].metadata.name}'
   register: keycloak_pod_name
