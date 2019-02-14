@@ -1,9 +1,4 @@
 ---
-- hosts: all
-  tasks:
-    - set_fact: 
-        TAG: test-tag
-
 
 - name: Test keycloak-apb
   hosts: localhost

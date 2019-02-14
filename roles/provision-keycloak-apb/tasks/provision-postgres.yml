@@ -36,7 +36,7 @@
     session_affinity: None
 
 - k8s_v1_persistent_volume_claim:
-    name: '{{ postgres_service_name }}'
+    name: '{{ postgres_pv_claim_name }}'
     namespace: '{{ namespace }}'
     access_modes:
       - ReadWriteOnce
@@ -48,10 +48,10 @@
     namespace: '{{ namespace }}'
     replicas: 1
     labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       service: '{{ postgres_service_name }}'
     spec_template_metadata_labels:
-      app: '{{ keycloak_service_name }}'
+      app: '{{ app_name }}'
       name: '{{ postgres_service_name }}'
     containers:
     - name: postgresql
@@ -100,4 +100,4 @@
     volumes:
     - name: '{{ postgres_service_name }}-data'
       persistent_volume_claim:
-        claim_name: '{{ postgres_service_name }}'
+        claim_name: '{{ postgres_pv_claim_name }}'

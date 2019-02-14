@@ -4,13 +4,14 @@
 keycloak_protocol: https
 
 # Global constants
-keycloak_service_name: keycloak-{{ TAG }}
-postgres_service_name: postgres-{{ TAG }}
-keycloak_route_name: keycloak-{{ TAG }}
-keycloak_configmap_name: keycloak-{{ TAG }}
-keycloak_secret_name: keycloak-{{ TAG }}
-postgres_secret_name: keycloak-postgres-{{ TAG }}
-keycloak_pv_claim_name: keycloak-metrics-{{ TAG }}
-postgres_pv_claim_name: postgres-{{ TAG }}
+app_name: "identity-management"
+keycloak_service_name: keycloak
+postgres_service_name: keycloak-postgres
+keycloak_route_name: keycloak-route
+keycloak_configmap_name: keycloak-configmap
+keycloak_secret_name: keycloak-secret
+postgres_secret_name: keycloak-postgres-secret
+keycloak_pv_claim_name: keycloak-metrics-pvc
+postgres_pv_claim_name: keycloak-postgres-pvc
 keycloak_admin_realm_name: master
 encode_asb_binding: yes
