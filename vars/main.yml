@@ -4,6 +4,7 @@
 keycloak_protocol: https
 
 # Global constants
+dashboard_filename: keycloak-dashboard.json # name the file will have inside the config map
 app_name: "identity-management"
 keycloak_service_name: keycloak
 postgres_service_name: keycloak-postgres

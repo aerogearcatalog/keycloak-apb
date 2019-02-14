@@ -11,6 +11,7 @@
   until: '"not found" in result.stdout'
   with_items:
     - '{{ keycloak_configmap_name }}'
+    - '{{ dashboard_filename }}'
 
 - name: Test|Check that all secrets have been removed
   shell: oc get secret --namespace={{ namespace }} {{ item }} 2>&1
@@ -91,10 +92,6 @@
     until: keycloak_auth_response.status == 503 or
            keycloak_auth_response.status in [200, 401, 403]
     ignore_errors: yes
-
-  - debug:
-      var: keycloak_auth_response
-      verbosity: 2
 
   - name: Test|Check that keycloak {{ _apb_provision_creds.REALM }} realm exists
     uri:
