@@ -9,10 +9,6 @@
       storage: 10M
   register: create_volume_claim
 
-- name: get postgres IP
-  shell: oc get service {{ postgres_service_name }} -n {{ namespace }} -o jsonpath='{.spec.clusterIP}'
-  register: postgresIP
-
 - name: 'create keycloak k8s deployment'
   k8s_extensions_v1beta1_deployment:
     name: '{{ keycloak_service_name }}'
@@ -36,25 +32,25 @@
         value: '{{ ADMIN_PASSWORD }}'
       - name: PROXY_ADDRESS_FORWARDING
         value: 'true'
-      - name: POSTGRES_USER
+      - name: DB_VENDOR
+        value: postgres
+      - name: DB_ADDR
+        value: '{{ postgres_service_name }}'
+      - name: DB_USER
         value_from:
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-user
-      - name: POSTGRES_PASSWORD
+      - name: DB_PASSWORD
         value_from:
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-password
-      - name: POSTGRES_DATABASE
+      - name: DB_DATABASE
         value_from:
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-name
-      - name: POSTGRES_PORT_5432_TCP_PORT
-        value: "5432"
-      - name: POSTGRES_PORT_5432_TCP_ADDR
-        value: "{{postgresIP.stdout}}"
       image: '{{keycloak_image }}:{{ keycloak_image_tag }}'
       name: '{{ keycloak_service_name }}'
       ports:
