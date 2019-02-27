@@ -9,10 +9,6 @@
       storage: 10M
   register: create_volume_claim
 
-- name: get postgres IP
-  shell: oc get service {{ postgres_service_name }} -n {{ namespace }} -o jsonpath='{.spec.clusterIP}'
-  register: postgresIP
-
 - name: 'create keycloak k8s deployment'
   k8s_extensions_v1beta1_deployment:
     name: '{{ keycloak_service_name }}'
