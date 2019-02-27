@@ -50,6 +50,7 @@ dWJsaWMnXQogICAgICBkZWZhdWx0OiBwdWJsaWMK" \
       version="1.0.0"
 
 COPY playbooks /opt/apb/actions
+COPY playbooks /opt/apb/project
 COPY roles /opt/ansible/roles
 COPY vars /opt/ansible/vars
 RUN chmod -R g=u /opt/{ansible,apb}
