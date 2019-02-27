@@ -1,8 +1,8 @@
 ---
 playbook_debug: false
 
-keycloak_image: docker.io/jboss/keycloak-openshift
-keycloak_image_tag: 3.4.3.Final
+keycloak_image: docker.io/jboss/keycloak
+keycloak_image_tag: 4.8.3.Final
 
 postgres_image: docker.io/centos/postgresql-96-centos7
 postgres_image_tag: '9.6'
