@@ -141,7 +141,7 @@ OiBUcnVlCiAgICAgIHRpdGxlOiBNb2JpbGUgY2xpZW50IElEL1NlcnZpY2UgSUQKICAgICAgdHlw\
 ZTogc3RyaW5nCiAgICAtIG5hbWU6IENMSUVOVF9UWVBFCiAgICAgIHJlcXVpcmVkOiBUcnVlCiAg\
 ICAgIHRpdGxlOiBLZXljbG9hayBjbGllbnQgdHlwZQogICAgICB0eXBlOiBlbnVtCiAgICAgIGVu\
 dW06IFsnYmVhcmVyJywgJ3B1YmxpYyddCiAgICAgIGRlZmF1bHQ6IHB1YmxpYwo=" \
-      name="mobile/mobile-identity-management-apb" \
+      name="mobile-1-tech-preview/mobile-identity-management-apb" \
       io.k8s.display-name="Mobile Identity Management APB" \
       io.k8s.description="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
       description="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
@@ -154,5 +154,12 @@ COPY playbooks /opt/apb/actions
 COPY playbooks /opt/apb/project
 COPY roles /opt/ansible/roles
 COPY vars /opt/ansible/vars
+
+COPY artifacts/org/jboss/aerogear/keycloak-metrics-spi/*/keycloak-metrics-spi-*.jar /opt/ansible/roles/provision-keycloak-apb/files/
+RUN rm -f /opt/ansible/roles/provision-keycloak-apb/files/keycloak-metrics-spi-*-sources.jar && \
+    ls -lh /opt/ansible/roles/provision-keycloak-apb/files/ && \
+    mv /opt/ansible/roles/provision-keycloak-apb/files/keycloak-metrics-spi-*.jar /opt/ansible/roles/provision-keycloak-apb/files/keycloak-metrics-spi.jar
+
+
 RUN chmod -R g=u /opt/{ansible,apb}
 USER apb
