@@ -51,7 +51,7 @@
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-name
-      image: '{{keycloak_image }}:{{ keycloak_image_tag }}'
+      image: '{{ keycloak_image }}'
       name: '{{ keycloak_service_name }}'
       ports:
       - container_port: 8080

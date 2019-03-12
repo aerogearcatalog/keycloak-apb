@@ -55,7 +55,7 @@
       name: '{{ postgres_service_name }}'
     containers:
     - name: postgresql
-      image: '{{ postgres_image }}:{{ postgres_image_tag }}'
+      image: '{{ postgres_image }}'
       ports:
       - container_port: 5432
         protocol: TCP
