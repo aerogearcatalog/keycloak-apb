@@ -14,9 +14,10 @@ metadata:
   serviceName: keycloak
 plans:
   - name: default
-    description: Deploy keycloak
+    description: This plan should be used in most use cases
     free: True
     metadata:
+      displayName: Default
       mobileclient_bind_parameters_data:
         - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
         - '{"name": "CLIENT_TYPE", "value": "public", "type": "default"}'
@@ -24,6 +25,63 @@ plans:
         - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
         - '{"name": "CLIENT_TYPE", "value": "bearer", "type": "default"}'
     parameters:
+    - name: ADMIN_USERNAME
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin username
+    - name: ADMIN_PASSWORD
+      required: True
+      default: admin
+      type: string
+      title: Keycloak admin password
+    - name: CUSTOM_REALM_NAME
+      required: False
+      type: string
+      title: Name of the Keycloak realm (defaults to current namespace)
+    - name: USE_SHARED_SERVICE
+      required: False
+      type: bool
+      title: Connect to an existing shared service
+    - name: SHARED_HOST
+      required: False
+      type: string
+      title: URL of the shared service
+    bind_parameters:
+    - name: CLIENT_ID
+      required: True
+      title: Mobile client ID/Service ID
+      type: string
+    - name: CLIENT_TYPE
+      required: True
+      title: Keycloak client type
+      type: enum
+      enum: ['bearer', 'public']
+      default: public
+  - name: custom
+    description: This plan can be used if images need to be customized
+    free: True
+    metadata:
+      displayName: User Specified
+      mobileclient_bind_parameters_data:
+        - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
+        - '{"name": "CLIENT_TYPE", "value": "public", "type": "default"}'
+      serviceinstance_bind_parameters_data:
+        - '{"name": "CLIENT_ID", "value": "metadata.name", "type": "path"}'
+        - '{"name": "CLIENT_TYPE", "value": "bearer", "type": "default"}'
+    parameters:
+    - name: custom_idm_image
+      title: Identity management container image
+      description: The image to use for the Identity Management service (You shouldn't need to change this)
+      default: docker.io/jboss/keycloak:4.8.3.Final
+      type: string
+      required: True
+    - name: custom_postgresql_image
+      title: PostgreSQL container image
+      description: The image to use for the PostgreSQL database (You shouldn't need to change this)
+      default: docker.io/centos/postgresql-96-centos7:9.6
+      type: string
+      required: True
     - name: ADMIN_USERNAME
       required: True
       default: admin

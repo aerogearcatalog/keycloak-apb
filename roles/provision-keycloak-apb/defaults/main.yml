@@ -1,11 +1,11 @@
 ---
 playbook_debug: false
 
-keycloak_image: docker.io/jboss/keycloak
-keycloak_image_tag: 4.8.3.Final
+default_keycloak_image: docker.io/jboss/keycloak:4.8.3.Final
+keycloak_image: '{{ custom_idm_image | default(default_keycloak_image, true) }}'
 
-postgres_image: docker.io/centos/postgresql-96-centos7
-postgres_image_tag: '9.6'
+default_postgres_image: docker.io/centos/postgresql-96-centos7:9.6
+postgres_image: '{{ custom_postgresql_image | default(default_postgres_image, true) }}'
 postgres_database_name: keycloak
 
 # Keycloak dashboard config
