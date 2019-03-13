@@ -1,5 +1,5 @@
 version: 1.0
-name: keycloak-apb
+name: identity-management-apb
 description: Identity Management - Identity and Access Management
 bindable: True
 async: required
@@ -11,7 +11,7 @@ metadata:
   imageUrl: "data:image/png;base64,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"
   documentationUrl: "https://docs.aerogear.org/external/apb/keycloak.html"
   providerDisplayName: "Red Hat, Inc."
-  serviceName: keycloak
+  serviceName: identitymanagement
 plans:
   - name: default
     description: This plan should be used in most use cases
@@ -29,16 +29,16 @@ plans:
       required: True
       default: admin
       type: string
-      title: Keycloak admin username
+      title: Admin username
     - name: ADMIN_PASSWORD
       required: True
       default: admin
       type: string
-      title: Keycloak admin password
+      title: Admin password
     - name: CUSTOM_REALM_NAME
       required: False
       type: string
-      title: Name of the Keycloak realm (defaults to current namespace)
+      title: Name of the realm (defaults to current namespace)
     - name: USE_SHARED_SERVICE
       required: False
       type: bool
@@ -54,7 +54,7 @@ plans:
       type: string
     - name: CLIENT_TYPE
       required: True
-      title: Keycloak client type
+      title: Client type
       type: enum
       enum: ['bearer', 'public']
       default: public
@@ -86,16 +86,16 @@ plans:
       required: True
       default: admin
       type: string
-      title: Keycloak admin username
+      title: Admin username
     - name: ADMIN_PASSWORD
       required: True
       default: admin
       type: string
-      title: Keycloak admin password
+      title: Admin password
     - name: CUSTOM_REALM_NAME
       required: False
       type: string
-      title: Name of the Keycloak realm (defaults to current namespace)
+      title: Name of the realm (defaults to current namespace)
     - name: USE_SHARED_SERVICE
       required: False
       type: bool
@@ -111,7 +111,7 @@ plans:
       type: string
     - name: CLIENT_TYPE
       required: True
-      title: Keycloak client type
+      title: Client type
       type: enum
       enum: ['bearer', 'public']
       default: public
