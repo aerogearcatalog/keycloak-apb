@@ -368,7 +368,7 @@
       "tableColumn": "Value",
       "targets": [
         {
-          "expr": "max(jvm_memory_bytes_used{area=\"heap\"}) + max(jvm_memory_bytes_used{area=\"nonheap\"})",
+          "expr": "max(jvm_memory_bytes_used{area=\"heap\", kubernetes_name=\"keycloak\"}) + max(jvm_memory_bytes_used{area=\"nonheap\", kubernetes_name=\"keycloak\"})",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -606,7 +606,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_max)",
+          "expr": "sum(jvm_memory_bytes_max{kubernetes_name=\"keycloak\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -614,14 +614,14 @@
           "refId": "A"
         },
         {
-          "expr": "sum(jvm_memory_bytes_committed)",
+          "expr": "sum(jvm_memory_bytes_committed{kubernetes_name=\"keycloak\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Comitted",
           "refId": "C"
         },
         {
-          "expr": "sum(jvm_memory_bytes_used)",
+          "expr": "sum(jvm_memory_bytes_used{kubernetes_name=\"keycloak\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
