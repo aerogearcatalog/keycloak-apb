@@ -30,6 +30,10 @@
         value: '{{ ADMIN_USERNAME }}'
       - name: KEYCLOAK_PASSWORD
         value: '{{ ADMIN_PASSWORD }}'
+      - name: SSO_ADMIN_USERNAME
+        value: '{{ ADMIN_USERNAME }}'
+      - name: SSO_ADMIN_PASSWORD
+        value: '{{ ADMIN_PASSWORD }}'
       - name: PROXY_ADDRESS_FORWARDING
         value: 'true'
       - name: DB_VENDOR
