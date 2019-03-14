@@ -16,3 +16,6 @@ keycloak_pv_claim_name: keycloak-metrics-pvc
 postgres_pv_claim_name: keycloak-postgres-pvc
 keycloak_admin_realm_name: master
 encode_asb_binding: yes
+postgres_strategy_type: "Recreate"
+postgres_strategy_active_deadline_seconds: "21600"
+postgres_strategy_recreate_timeout: "600"
