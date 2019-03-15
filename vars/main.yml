@@ -7,7 +7,7 @@ keycloak_protocol: https
 dashboard_filename: keycloak-dashboard.json # name the file will have inside the config map
 app_name: "identity-management"
 keycloak_service_name: keycloak
-postgres_service_name: keycloak-postgres
+postgres_service_name: keycloak-postgresql #do not change this otherwise rh-sso might not use postgresql
 keycloak_route_name: keycloak-route
 keycloak_configmap_name: keycloak-configmap
 keycloak_secret_name: keycloak-secret
