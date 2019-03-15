@@ -183,7 +183,7 @@ ICAgZW51bTogWydiZWFyZXInLCAncHVibGljJ10KICAgICAgZGVmYXVsdDogcHVibGljCg==" \
       summary="An APB that deploys Keycloak/RH-SSO on OpenShift through the service catalog, and provides a binding action for mobile use cases" \
       usage="This image is used by the Automation Broker in OpenShift to provision Mobile Identity Management" \
       maintainer="Red Hat Mobile team" \
-      version="1.0.0"
+      version="1.2.1"
 
 COPY playbooks /opt/apb/actions
 COPY playbooks /opt/apb/project
