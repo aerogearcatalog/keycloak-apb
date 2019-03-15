@@ -16,7 +16,7 @@
   - '{{ postgres_service_name }}'
 
 - name: Delete k8s deployment
-  k8s_extensions_v1beta1_deployment:
+  openshift_v1_deployment_config:
     name: '{{ item }}'
     namespace: '{{ namespace }}'
     state: absent

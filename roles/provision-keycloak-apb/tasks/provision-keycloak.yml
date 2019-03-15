@@ -10,7 +10,7 @@
   register: create_volume_claim
 
 - name: 'create keycloak k8s deployment'
-  k8s_extensions_v1beta1_deployment:
+  openshift_v1_deployment_config:
     name: '{{ keycloak_service_name }}'
     namespace: '{{ namespace }}'
     labels:
@@ -45,6 +45,12 @@
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-user
+      # this is for rh-sso, it requires a different env var
+      - name: DB_USERNAME
+        value_from:
+          secret_key_ref:
+            name: '{{ postgres_secret_name }}'
+            key: database-user
       - name: DB_PASSWORD
         value_from:
           secret_key_ref:
@@ -55,6 +61,9 @@
           secret_key_ref:
             name: '{{ postgres_secret_name }}'
             key: database-name
+      # required for rh-sso to pick up postgresql as the database
+      - name: DB_SERVICE_PREFIX_MAPPING
+        value: '{{ postgres_service_name }}=DB'
       image: '{{ keycloak_image }}'
       name: '{{ keycloak_service_name }}'
       ports:
