@@ -43,7 +43,7 @@
     resources_requests:
       storage: "1Gi"
 
-- k8s_extensions_v1beta1_deployment:
+- openshift_v1_deployment_config:
     name: '{{ postgres_service_name }}'
     namespace: '{{ namespace }}'
     replicas: 1
