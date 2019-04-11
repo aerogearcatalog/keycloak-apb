@@ -65,6 +65,7 @@
       - name: DB_SERVICE_PREFIX_MAPPING
         value: '{{ postgres_service_name }}=DB'
       image: '{{ keycloak_image }}'
+      imagePullPolicy: Always
       name: '{{ keycloak_service_name }}'
       ports:
       - container_port: 8080
